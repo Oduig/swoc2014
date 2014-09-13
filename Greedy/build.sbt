@@ -6,6 +6,8 @@ scalaVersion := "2.11.2"
 
 mainClass in Compile := Some("com.gjos.scala.swoc.Main")
 
+assemblySettings
+
 libraryDependencies ++= Seq(
   "org.scalatest" % "scalatest_2.11" % "2.2.1" % "test",
   "com.github.pathikrit" %% "dijon" % "0.2.4"
