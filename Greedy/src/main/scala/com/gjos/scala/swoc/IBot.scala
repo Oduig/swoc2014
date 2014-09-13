@@ -3,10 +3,10 @@ package com.gjos.scala.swoc
 import com.gjos.scala.swoc.protocol.{ProcessedMove, Move, MoveRequest, InitiateRequest}
 
 trait IBot {
-  def HandleInitiate(request: InitiateRequest)
+  def handleInitiate(request: InitiateRequest)
 
-  def HandleMove(request: MoveRequest): Move
+  def handleMove(request: MoveRequest): Move
 
-  def HandleProcessedMove(move: ProcessedMove)
+  def handleProcessedMove(move: ProcessedMove)
 }
 

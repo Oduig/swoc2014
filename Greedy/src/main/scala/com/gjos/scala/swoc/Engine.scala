@@ -10,91 +10,52 @@ class Engine(private val bot: IBot) extends AutoCloseable {
   private var botColor: Option[Player] = None
 
   def run() {
-    try {
-      DoInitiateRequest()
-      var winner = DoFirstRound()
-      while (winner == None) {
-        winner = DoNormalRound()
-      }
-    } catch {
-      case ex: Exception =>
-        System.err.println("Exception. Bailing out.")
-        ex.printStackTrace(System.err)
+    doInitiateRequest()
+    var winner = doFirstRound()
+    while (winner == None) {
+      winner = doNormalRound()
     }
   }
 
-  private def DoInitiateRequest() {
+  private def doInitiateRequest() {
     val initRequest = JsonConverters.createInitiateRequest(readMessage())
     botColor = Some(initRequest.color)
-    bot.HandleInitiate(initRequest)
+    bot.handleInitiate(initRequest)
   }
 
-  private def DoFirstRound(): Option[Player] = botColor match {
+  private def doFirstRound(): Option[Player] = botColor match {
     case Some(player) if player == Player.White =>
-      HandleMoveRequest()
-      val move1 = HandleProcessedMove()
-      if (move1 != None) {
-        move1
-      } else {
-        val move2 = HandleProcessedMove()
-        if (move2 != None) {
-          move2
-        } else {
-          HandleProcessedMove()
-        }
-      }
-    case _ => HandleProcessedMove()
+      handleMoveRequest()
+      handleProcessedMove() orElse handleProcessedMove() orElse handleProcessedMove()
+    case _ => handleProcessedMove()
   }
 
-  private def DoNormalRound(): Option[Player] = {
-    var winner: Option[Player] = None
-    HandleMoveRequest()
-    winner = HandleProcessedMove()
-    if (winner != None) {
-      return winner
+  private def doNormalRound(): Option[Player] = {
+    def handleMoveAndProcess() = {
+      handleMoveRequest()
+      handleProcessedMove()
     }
-    HandleMoveRequest()
-    winner = HandleProcessedMove()
-    if (winner != None) {
-      return winner
-    }
-    winner = HandleProcessedMove()
-    if (winner != None) {
-      return winner
-    }
-    winner = HandleProcessedMove()
-    winner
+    handleMoveAndProcess() orElse handleMoveAndProcess() orElse handleProcessedMove() orElse handleProcessedMove()
   }
 
-  private def HandleMoveRequest() {
+  private def handleMoveRequest() {
     val moveRequest: MoveRequest = JsonConverters.createMoveRequest(readMessage())
-    val move: Move = bot.HandleMove(moveRequest)
+    val move: Move = bot.handleMove(moveRequest)
     writeMessage(JsonConverters.toJson(move))
   }
 
-  private def HandleProcessedMove(): Option[Player] = {
+  private def handleProcessedMove(): Option[Player] = {
     val processedMove: ProcessedMove = JsonConverters.createProcessedMove(readMessage())
-    bot.HandleProcessedMove(processedMove)
+    bot.handleProcessedMove(processedMove)
     processedMove.winner
   }
 
   def close() {
-    try {
-      inReader.close()
-      inStreamReader.close()
-    }
-    catch {
-      case e: IOException =>
-        e.printStackTrace()
-    }
+    inReader.close()
+    inStreamReader.close()
   }
 
-  private def readMessage() = {
-    val messageStr = inReader.readLine
-    if (messageStr == null || messageStr.isEmpty)
-      throw new IllegalArgumentException("Received message was missing or empty.")
-    messageStr
-  }
+  private def readMessage() = inReader.readLine
 
   private def writeMessage(message: String) = System.out.println(message)
 }

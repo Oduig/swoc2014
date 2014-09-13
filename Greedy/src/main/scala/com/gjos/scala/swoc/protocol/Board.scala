@@ -1,7 +1,6 @@
 package com.gjos.scala.swoc.protocol
 
 import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
 
 class Board(private val state: mutable.Buffer[mutable.Buffer[Field]] = Board.defaultState) {
 
@@ -24,9 +23,7 @@ class Board(private val state: mutable.Buffer[mutable.Buffer[Field]] = Board.def
   }
 
   def dump() {
-    System.out.print("-- owners --------  ")
-    System.out.print("-- stones --------  ")
-    System.out.println("-- heights ----------------")
+    System.out.print("-- owners --------  -- stones --------  -- heights ----------------")
     for (y <- 0 until 9) {
       for (x <- 0 until 9) {
         val c = if (BoardLocation.IsLegal(x, y)) {
@@ -57,14 +54,12 @@ class Board(private val state: mutable.Buffer[mutable.Buffer[Field]] = Board.def
       }
       System.out.println()
     }
-    System.out.print("------------------  ")
-    System.out.print("------------------  ")
-    System.out.println("---------------------------")
+    System.out.println("------------------  ------------------  ---------------------------")
     System.out.print("White: "
       + totalCount(Player.White, Stone.Pebble) + " a, "
       + totalCount(Player.White, Stone.Rock) + " b, "
       + totalCount(Player.White, Stone.Boulder) + " c")
-    System.out.println("  Black: "
+    System.out.println(s"  Black: "
       + totalCount(Player.Black, Stone.Pebble) + " a, "
       + totalCount(Player.Black, Stone.Rock) + " b, "
       + totalCount(Player.Black, Stone.Boulder) + " c")

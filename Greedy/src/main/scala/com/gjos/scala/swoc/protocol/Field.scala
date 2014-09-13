@@ -8,13 +8,13 @@ case class Field(var player: Option[Player], var stone: Option[Stone], height: I
 }
 
 object Field {
-  lazy val empty = Field(None, None, 0)
-  lazy val blackPebble = Field(Some(Player.Black), Some(Stone.Pebble), 1)
-  lazy val blackRock = Field(Some(Player.Black), Some(Stone.Rock), 1)
-  lazy val blackBoulder = Field(Some(Player.Black), Some(Stone.Boulder), 1)
-  lazy val whitePebble = Field(Some(Player.White), Some(Stone.Pebble), 1)
-  lazy val whiteRock = Field(Some(Player.White), Some(Stone.Rock), 1)
-  lazy val whiteBoulder = Field(Some(Player.White), Some(Stone.Boulder), 1)
+  val empty = Field(None, None, 0)
+  val blackPebble = Field(Some(Player.Black), Some(Stone.Pebble), 1)
+  val blackRock = Field(Some(Player.Black), Some(Stone.Rock), 1)
+  val blackBoulder = Field(Some(Player.Black), Some(Stone.Boulder), 1)
+  val whitePebble = Field(Some(Player.White), Some(Stone.Pebble), 1)
+  val whiteRock = Field(Some(Player.White), Some(Stone.Rock), 1)
+  val whiteBoulder = Field(Some(Player.White), Some(Stone.Boulder), 1)
 
   def getOwner(fieldCode: Int): Option[Player] = fieldCode match {
     case x if x > 0 => Some(Player.White)
