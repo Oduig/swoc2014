@@ -1,13 +1,13 @@
 package com.gjos.scala.swoc
 
 import java.io.{BufferedReader, IOException, InputStreamReader}
-import com.gjos.scala.swoc.protocol.{ProcessedMove2, Move2, MoveRequest2, Player2}
+import com.gjos.scala.swoc.protocol.{ProcessedMove, Move, MoveRequest, Player}
 
-class Engine2(private val bot: IBot2) extends AutoCloseable {
+class Engine(private val bot: IBot) extends AutoCloseable {
 
   private final val inStreamReader = new InputStreamReader(System.in)
   private final val inReader = new BufferedReader(inStreamReader)
-  private var botColor: Option[Player2] = None
+  private var botColor: Option[Player] = None
 
   def run() {
     try {
@@ -29,8 +29,8 @@ class Engine2(private val bot: IBot2) extends AutoCloseable {
     bot.HandleInitiate(initRequest)
   }
 
-  private def DoFirstRound(): Option[Player2] = botColor match {
-    case Some(player) if player == Player2.White =>
+  private def DoFirstRound(): Option[Player] = botColor match {
+    case Some(player) if player == Player.White =>
       HandleMoveRequest()
       val move1 = HandleProcessedMove()
       if (move1 != None) {
@@ -46,8 +46,8 @@ class Engine2(private val bot: IBot2) extends AutoCloseable {
     case _ => HandleProcessedMove()
   }
 
-  private def DoNormalRound(): Option[Player2] = {
-    var winner: Option[Player2] = None
+  private def DoNormalRound(): Option[Player] = {
+    var winner: Option[Player] = None
     HandleMoveRequest()
     winner = HandleProcessedMove()
     if (winner != None) {
@@ -67,13 +67,13 @@ class Engine2(private val bot: IBot2) extends AutoCloseable {
   }
 
   private def HandleMoveRequest() {
-    val moveRequest: MoveRequest2 = JsonConverters.createMoveRequest(readMessage())
-    val move: Move2 = bot.HandleMove(moveRequest)
+    val moveRequest: MoveRequest = JsonConverters.createMoveRequest(readMessage())
+    val move: Move = bot.HandleMove(moveRequest)
     writeMessage(JsonConverters.toJson(move))
   }
 
-  private def HandleProcessedMove(): Option[Player2] = {
-    val processedMove: ProcessedMove2 = JsonConverters.createProcessedMove(readMessage())
+  private def HandleProcessedMove(): Option[Player] = {
+    val processedMove: ProcessedMove = JsonConverters.createProcessedMove(readMessage())
     bot.HandleProcessedMove(processedMove)
     processedMove.winner
   }

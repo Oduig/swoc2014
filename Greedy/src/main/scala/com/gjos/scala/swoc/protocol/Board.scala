@@ -3,21 +3,21 @@ package com.gjos.scala.swoc.protocol
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
-class Board2(private val state: mutable.Buffer[mutable.Buffer[Field]] = Board2.defaultState) {
+class Board(private val state: mutable.Buffer[mutable.Buffer[Field]] = Board.defaultState) {
 
-  def getField(location: BoardLocation2): Field = getField(location.x, location.y)
+  def getField(location: BoardLocation): Field = getField(location.x, location.y)
   def getField(x: Int, y: Int): Field = state(x)(y)
 
-  def setField(location: BoardLocation2, field: Field) = {
+  def setField(location: BoardLocation, field: Field) = {
     require(field.player.nonEmpty && field.stone.nonEmpty && field.height > 0, "Cannot set empty field")
     state(location.x)(location.y) = field
   }
 
-  def clearField(location: BoardLocation2) {
+  def clearField(location: BoardLocation) {
     state(location.x)(location.y) = Field.empty
   }
 
-  def totalCount(player: Player2, stone: Stone2): Int = {
+  def totalCount(player: Player, stone: Stone): Int = {
     state.map(
       row => row.count(field => field.player == Some(player) && field.stone == Some(stone))
     ).sum
@@ -29,10 +29,10 @@ class Board2(private val state: mutable.Buffer[mutable.Buffer[Field]] = Board2.d
     System.out.println("-- heights ----------------")
     for (y <- 0 until 9) {
       for (x <- 0 until 9) {
-        val c = if (BoardLocation2.IsLegal(x, y)) {
+        val c = if (BoardLocation.IsLegal(x, y)) {
           state(x)(y).player match {
-            case Some(Player2.Black) => 'B'
-            case Some(Player2.White) => 'W'
+            case Some(Player.Black) => 'B'
+            case Some(Player.White) => 'W'
             case _ => '.'
           }
         } else ' '
@@ -40,11 +40,11 @@ class Board2(private val state: mutable.Buffer[mutable.Buffer[Field]] = Board2.d
       }
       System.out.print("  ")
       for (x <- 0 until 9) {
-        val c = if (BoardLocation2.IsLegal(x, y)) {
+        val c = if (BoardLocation.IsLegal(x, y)) {
           state(x)(y).stone match {
-            case Some(Stone2.Pebble) => 'a'
-            case Some(Stone2.Rock) => 'b'
-            case Some(Stone2.Boulder) => 'c'
+            case Some(Stone.Pebble) => 'a'
+            case Some(Stone.Rock) => 'b'
+            case Some(Stone.Boulder) => 'c'
             case _ => '.'
           }
         } else ' '
@@ -52,7 +52,7 @@ class Board2(private val state: mutable.Buffer[mutable.Buffer[Field]] = Board2.d
       }
       System.out.print("  ")
       for (x <- 0 until 9) {
-        val s = if (BoardLocation2.IsLegal(x, y)) f"${state(x)(y).height}%2d" else "  "
+        val s = if (BoardLocation.IsLegal(x, y)) f"${state(x)(y).height}%2d" else "  "
         System.out.print(" " + s)
       }
       System.out.println()
@@ -61,17 +61,17 @@ class Board2(private val state: mutable.Buffer[mutable.Buffer[Field]] = Board2.d
     System.out.print("------------------  ")
     System.out.println("---------------------------")
     System.out.print("White: "
-      + totalCount(Player2.White, Stone2.Pebble) + " a, "
-      + totalCount(Player2.White, Stone2.Rock) + " b, "
-      + totalCount(Player2.White, Stone2.Boulder) + " c")
+      + totalCount(Player.White, Stone.Pebble) + " a, "
+      + totalCount(Player.White, Stone.Rock) + " b, "
+      + totalCount(Player.White, Stone.Boulder) + " c")
     System.out.println("  Black: "
-      + totalCount(Player2.Black, Stone2.Pebble) + " a, "
-      + totalCount(Player2.Black, Stone2.Rock) + " b, "
-      + totalCount(Player2.Black, Stone2.Boulder) + " c")
+      + totalCount(Player.Black, Stone.Pebble) + " a, "
+      + totalCount(Player.Black, Stone.Rock) + " b, "
+      + totalCount(Player.Black, Stone.Boulder) + " c")
   }
 }
 
-object Board2 {
+object Board {
   import Field._
   private lazy val defaultState = mutable.Buffer(
     mutable.Buffer(whitePebble, whitePebble, whitePebble, whitePebble, blackPebble, empty, empty, empty, empty),
@@ -88,6 +88,6 @@ object Board2 {
   def fromInts(_state: Iterable[Iterable[Int]]) = {
     val state = (for (row <- _state) yield
       (for (cell <- row) yield Field.fromCode(cell)).toBuffer).toBuffer
-    new Board2(state)
+    new Board(state)
   }
 }

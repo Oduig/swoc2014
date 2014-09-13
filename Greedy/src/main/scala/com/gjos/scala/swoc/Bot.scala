@@ -3,54 +3,54 @@ package com.gjos.scala.swoc
 import java.util.Random
 import com.gjos.scala.swoc.protocol._
 import scala.collection.mutable.ListBuffer
-import com.gjos.scala.swoc.protocol.InitiateRequest2
+import com.gjos.scala.swoc.protocol.InitiateRequest
 
-class Bot2(private var myColor: Option[Player2]) extends IBot2 {
+class Bot(private var myColor: Option[Player]) extends IBot {
   private val random = new Random
 
-  def HandleInitiate(request: InitiateRequest2) {
+  def HandleInitiate(request: InitiateRequest) {
     myColor = Some(request.color)
   }
 
-  def HandleMove(request: MoveRequest2): Move2 = request.allowedMoves match {
-    case x :: Nil if x == MoveType2.Attack => GetRandomAttack(request.board)
+  def HandleMove(request: MoveRequest): Move = request.allowedMoves match {
+    case x :: Nil if x == MoveType.Attack => GetRandomAttack(request.board)
     case _ => GetRandomMove(request.board)
   }
 
-  def HandleProcessedMove(move: ProcessedMove2) {
+  def HandleProcessedMove(move: ProcessedMove) {
   }
 
-  private def GetRandomMove(board: Board2): Move2 = {
-    val allLocations: List[BoardLocation2] = Bot2.AllLegalBoardLocations()
+  private def GetRandomMove(board: Board): Move = {
+    val allLocations: List[BoardLocation] = Bot.AllLegalBoardLocations()
     import scala.collection.JavaConversions._
-    val myLocations: List[BoardLocation2] = for {
+    val myLocations: List[BoardLocation] = for {
       location <- allLocations
       if board.getField(location).player == myColor
     } yield location
-    val fromLocation: BoardLocation2 = myLocations.get(random.nextInt(myLocations.size))
-    val possibleToLocations: List[BoardLocation2] = Bot2.GetPossibleToLocations(board, fromLocation)
-    val toLocation: BoardLocation2 = possibleToLocations.get(random.nextInt(possibleToLocations.size))
+    val fromLocation: BoardLocation = myLocations.get(random.nextInt(myLocations.size))
+    val possibleToLocations: List[BoardLocation] = Bot.GetPossibleToLocations(board, fromLocation)
+    val toLocation: BoardLocation = possibleToLocations.get(random.nextInt(possibleToLocations.size))
     if (toLocation == fromLocation) {
-      new Move2(MoveType2.Pass, None, None)
+      new Move(MoveType.Pass, None, None)
     } else if (board.getField(toLocation).player != myColor) {
-      new Move2(MoveType2.Attack, Some(fromLocation), Some(toLocation))
+      new Move(MoveType.Attack, Some(fromLocation), Some(toLocation))
     } else {
-      new Move2(MoveType2.Strengthen, Some(fromLocation), Some(toLocation))
+      new Move(MoveType.Strengthen, Some(fromLocation), Some(toLocation))
     }
   }
 
-  private def GetRandomAttack(board: Board2): Move2 = {
-    var move: Move2 = GetRandomMove(board)
-    while (move.moveType != MoveType2.Attack) {
+  private def GetRandomAttack(board: Board): Move = {
+    var move: Move = GetRandomMove(board)
+    while (move.moveType != MoveType.Attack) {
       move = GetRandomMove(board)
     }
     move
   }
 }
 
-object Bot2 {
-  private def GetPossibleToLocations(board: Board2, fromLocation: BoardLocation2): List[BoardLocation2] = {
-    val possibleToLocations: ListBuffer[BoardLocation2] = ListBuffer[BoardLocation2]()
+object Bot {
+  private def GetPossibleToLocations(board: Board, fromLocation: BoardLocation): List[BoardLocation] = {
+    val possibleToLocations: ListBuffer[BoardLocation] = ListBuffer[BoardLocation]()
     possibleToLocations.append(fromLocation)
     val north = GetFirstNonEmptyInDirection(board, fromLocation, 0, -1)
     if (north.nonEmpty && IsValidMove(board, fromLocation, north.get)) possibleToLocations.append(north.get)
@@ -67,17 +67,17 @@ object Bot2 {
     possibleToLocations.toList
   }
 
-  private def GetFirstNonEmptyInDirection(board: Board2, location: BoardLocation2, directionX: Int, directionY: Int): Option[BoardLocation2] = {
+  private def GetFirstNonEmptyInDirection(board: Board, location: BoardLocation, directionX: Int, directionY: Int): Option[BoardLocation] = {
     var x: Int = location.x
     var y: Int = location.y
     do {
       x += directionX
       y += directionY
-    } while (BoardLocation2.IsLegal(x, y) && board.getField(x, y).player == None)
-    if (!BoardLocation2.IsLegal(x, y)) {
+    } while (BoardLocation.IsLegal(x, y) && board.getField(x, y).player == None)
+    if (!BoardLocation.IsLegal(x, y)) {
       None
     } else {
-      val newLocation: BoardLocation2 = new BoardLocation2(x, y)
+      val newLocation: BoardLocation = new BoardLocation(x, y)
       if ((newLocation == location) || (board.getField(newLocation).player == None)) {
         None
       } else {
@@ -86,7 +86,7 @@ object Bot2 {
     }
   }
 
-  private def IsValidMove(board: Board2, from: BoardLocation2, to: BoardLocation2): Boolean = {
+  private def IsValidMove(board: Board, from: BoardLocation, to: BoardLocation): Boolean = {
     val fromOwner = board.getField(from).player
     val toOwner = board.getField(to).player
     val fromHeight: Int = board.getField(from).height
@@ -94,11 +94,11 @@ object Bot2 {
     (fromOwner != None) && (toOwner != None) && ((fromOwner == toOwner) || fromHeight >= toHeight)
   }
 
-  private def AllLegalBoardLocations(): List[BoardLocation2] = {
+  private def AllLegalBoardLocations(): List[BoardLocation] = {
     for {
       y <- (0 until 9).toList
       x <- (0 until 9).toList
-      if BoardLocation2.IsLegal(x, y)
-    } yield new BoardLocation2(x, y)
+      if BoardLocation.IsLegal(x, y)
+    } yield new BoardLocation(x, y)
   }
 }

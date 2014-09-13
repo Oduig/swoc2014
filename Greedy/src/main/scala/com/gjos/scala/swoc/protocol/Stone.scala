@@ -1,23 +1,23 @@
 package com.gjos.scala.swoc.protocol
 
-trait Stone2 {
+trait Stone {
   val value: Int
 }
 
-object Stone2 {
-  case object Pebble extends Stone2 {
+object Stone {
+  case object Pebble extends Stone {
     val value = 1
   }
 
-  case object Rock extends Stone2 {
+  case object Rock extends Stone {
     val value = 2
   }
 
-  case object Boulder extends Stone2 {
+  case object Boulder extends Stone {
     val value = 3
   }
 
-  def byValue(i: Int): Option[Stone2] = i match {
+  def byValue(i: Int): Option[Stone] = i match {
     case 0 => None
     case 1 => Some(Pebble)
     case 2 => Some(Rock)
