@@ -5,11 +5,11 @@ import com.gjos.scala.swoc.protocol._
 import scala.collection.mutable.ListBuffer
 import com.gjos.scala.swoc.protocol.InitiateRequest2
 
-class Bot2() extends IBot2 {
+class Bot2(private var myColor: Option[Player2]) extends IBot2 {
   private val random = new Random
 
   def HandleInitiate(request: InitiateRequest2) {
-    myColor = request.color
+    myColor = Some(request.color)
   }
 
   def HandleMove(request: MoveRequest2): Move2 = request.allowedMoves match {
@@ -22,22 +22,20 @@ class Bot2() extends IBot2 {
 
   private def GetRandomMove(board: Board2): Move2 = {
     val allLocations: List[BoardLocation2] = Bot2.AllLegalBoardLocations()
-    val myLocations: List[BoardLocation2] = List[BoardLocation2]()
     import scala.collection.JavaConversions._
-    for (location <- allLocations) {
-      if (board.getField(location).player == Some(myColor)) {
-        myLocations.add(location)
-      }
-    }
+    val myLocations: List[BoardLocation2] = for {
+      location <- allLocations
+      if board.getField(location).player == myColor
+    } yield location
     val fromLocation: BoardLocation2 = myLocations.get(random.nextInt(myLocations.size))
     val possibleToLocations: List[BoardLocation2] = Bot2.GetPossibleToLocations(board, fromLocation)
     val toLocation: BoardLocation2 = possibleToLocations.get(random.nextInt(possibleToLocations.size))
     if (toLocation == fromLocation) {
-      new Move2(MoveType2.Pass, null, null)
-    } else if (board.getField(toLocation).player != Some(myColor)) {
-      new Move2(MoveType2.Attack, fromLocation, toLocation)
+      new Move2(MoveType2.Pass, None, None)
+    } else if (board.getField(toLocation).player != myColor) {
+      new Move2(MoveType2.Attack, Some(fromLocation), Some(toLocation))
     } else {
-      new Move2(MoveType2.Strengthen, fromLocation, toLocation)
+      new Move2(MoveType2.Strengthen, Some(fromLocation), Some(toLocation))
     }
   }
 
@@ -48,8 +46,6 @@ class Bot2() extends IBot2 {
     }
     move
   }
-
-  private var myColor: Player2 = null
 }
 
 object Bot2 {

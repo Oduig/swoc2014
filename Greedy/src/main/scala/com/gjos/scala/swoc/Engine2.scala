@@ -1,23 +1,19 @@
 package com.gjos.scala.swoc
 
 import java.io.{BufferedReader, IOException, InputStreamReader}
-import gos.bot.protocol.Player
-import gos.bot.InvalidMessageException
-import gos.bot.protocol.MoveRequest
-import gos.bot.protocol.Move
-import gos.bot.protocol.ProcessedMove
+import com.gjos.scala.swoc.protocol.{ProcessedMove2, Move2, MoveRequest2, Player2}
 
 class Engine2(private val bot: IBot2) extends AutoCloseable {
 
   private final val inStreamReader = new InputStreamReader(System.in)
   private final val inReader = new BufferedReader(inStreamReader)
-  private var botColor: Option[Player] = None
+  private var botColor: Option[Player2] = None
 
   def run() {
     try {
       DoInitiateRequest()
-      var winner: Player = DoFirstRound()
-      while (winner eq Player.None) {
+      var winner = DoFirstRound()
+      while (winner == None) {
         winner = DoNormalRound()
       }
     } catch {
@@ -29,22 +25,19 @@ class Engine2(private val bot: IBot2) extends AutoCloseable {
 
   private def DoInitiateRequest() {
     val initRequest = JsonConverters.createInitiateRequest(readMessage())
-    if (initRequest == null) {
-      throw new InvalidMessageException("Unexpected message received. Expected InitiateRequest.")
-    }
     botColor = Some(initRequest.color)
     bot.HandleInitiate(initRequest)
   }
 
-  private def DoFirstRound(): Player = botColor match {
-    case Some(player) if player eq Player.White =>
+  private def DoFirstRound(): Option[Player2] = botColor match {
+    case Some(player) if player == Player2.White =>
       HandleMoveRequest()
       val move1 = HandleProcessedMove()
-      if (move1 ne Player.None) {
+      if (move1 != None) {
         move1
       } else {
         val move2 = HandleProcessedMove()
-        if (move2 ne Player.None) {
+        if (move2 != None) {
           move2
         } else {
           HandleProcessedMove()
@@ -53,20 +46,20 @@ class Engine2(private val bot: IBot2) extends AutoCloseable {
     case _ => HandleProcessedMove()
   }
 
-  private def DoNormalRound(): Player = {
-    var winner: Player = null
+  private def DoNormalRound(): Option[Player2] = {
+    var winner: Option[Player2] = None
     HandleMoveRequest()
     winner = HandleProcessedMove()
-    if (winner ne Player.None) {
+    if (winner != None) {
       return winner
     }
     HandleMoveRequest()
     winner = HandleProcessedMove()
-    if (winner ne Player.None) {
+    if (winner != None) {
       return winner
     }
     winner = HandleProcessedMove()
-    if (winner ne Player.None) {
+    if (winner != None) {
       return winner
     }
     winner = HandleProcessedMove()
@@ -74,21 +67,15 @@ class Engine2(private val bot: IBot2) extends AutoCloseable {
   }
 
   private def HandleMoveRequest() {
-    val moveRequest: MoveRequest = JsonConverters.createMoveRequest(readMessage())
-    if (moveRequest == null) {
-      throw new InvalidMessageException("Unexpected message received. Expected MoveRequest.")
-    }
-    val move: Move = bot.HandleMove(moveRequest)
+    val moveRequest: MoveRequest2 = JsonConverters.createMoveRequest(readMessage())
+    val move: Move2 = bot.HandleMove(moveRequest)
     writeMessage(JsonConverters.toJson(move))
   }
 
-  private def HandleProcessedMove(): Player = {
-    val processedMove: ProcessedMove = JsonConverters.createProcessedMove(readMessage())
-    if (processedMove == null) {
-      throw new InvalidMessageException("Unexpected message received. Expected ProcessedMove.")
-    }
+  private def HandleProcessedMove(): Option[Player2] = {
+    val processedMove: ProcessedMove2 = JsonConverters.createProcessedMove(readMessage())
     bot.HandleProcessedMove(processedMove)
-    processedMove.Winner
+    processedMove.winner
   }
 
   def close() {

@@ -30,4 +30,6 @@ object Field {
   }
 
   def getHeight(fieldCode: Int) = Math.abs(fieldCode) / 4
+
+  def fromCode(code: Int): Field = Field(getOwner(code), getStone(code), getHeight(code))
 }
