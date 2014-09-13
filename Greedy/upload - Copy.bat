@@ -1,4 +1,0 @@
-del cookie.txt
-D:\Programs\Curl\curl.exe --user Guidoffrey:baratheon --cookie-jar ./cookie.txt http://swoc.jdub.nl/#/login
-D:\Programs\Curl\curl.exe --connect-timeout 60 -H "Host: swoc.jdub.nl" -H "User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:31.0) Gecko/20100101 Firefox/31.0" -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" -H "Accept-Language: en-us,en;q=0.7,nl;q=0.3" -H "Accept-Encoding: gzip, deflate" --cookie ./cookie.txt -H "Content-Type: multipart/form-data; boundary=---------------------------9832550717318" --data-binary @greedy.zip -X POST http://swoc.jdub.nl/api/bot/upload
-PAUSE

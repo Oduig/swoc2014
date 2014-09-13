@@ -36,7 +36,16 @@ class Board(private val state: mutable.Buffer[mutable.Buffer[Field]] = Board.def
     ).sum
   }
 
-  def copy() = new Board(state)
+  def copy() = {
+    val newState = mutable.Buffer[mutable.Buffer[Field]]()
+    for (row <- state) yield {
+      val newRow = mutable.Buffer[Field]()
+      newState.append(newRow)
+      row.copyToBuffer(newRow)
+    }
+    new Board(newState)
+  }
+
   def applyMove(move: Move): Board = {
     val newBoard = copy()
     move.moveType match {
