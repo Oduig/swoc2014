@@ -1,6 +1,4 @@
 call sbt assembly
 del greedy.zip
-java -jar out/proguard5.0/lib/proguard.jar @proguard.config
-"C:\Program Files\7-Zip\7za.exe" a -tzip greedy.zip greedy.jar
-del greedy.jar
+"C:\Program Files\7-Zip\7za.exe" a -tzip greedy.zip target\scala-2.11\Greedy-assembly-1.0.jar
 PAUSE

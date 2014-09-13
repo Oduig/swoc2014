@@ -58,15 +58,15 @@ object JsonConverters extends Dynamic {
     "To": <BoardLocation>
   }*/
   def toJson(move: Move): String = {
-    def boardLocationToJson(obl: Option[BoardLocation]) = obl match {
-      case Some(BoardLocation(x, y)) => s""""From": { "x": $x, "y": $y }"""
+    def boardLocationToJson(obl: Option[BoardLocation], key: String) = obl match {
+      case Some(BoardLocation(x, y)) => s""""$key": { "x": $x, "y": $y }"""
       case None => ""
     }
 
     List(
       s""""Type": ${move.moveType.value}""",
-      boardLocationToJson(move.from),
-      boardLocationToJson(move.to)
+      boardLocationToJson(move.from, "From"),
+      boardLocationToJson(move.to, "To")
     ).filter(_.nonEmpty).mkString("{", ", ", "}")
   }
 }

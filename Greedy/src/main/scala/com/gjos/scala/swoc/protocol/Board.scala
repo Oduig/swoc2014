@@ -5,7 +5,7 @@ import scala.collection.mutable
 class Board(private val state: mutable.Buffer[mutable.Buffer[Field]] = Board.defaultState) {
 
   def getField(location: BoardLocation): Field = getField(location.x, location.y)
-  def getField(x: Int, y: Int): Field = state(x)(y)
+  def getField(x: Int, y: Int): Field = state(y)(x)
 
   /**
    * Returns the current board's utility from a given player's perspective.
@@ -65,7 +65,7 @@ class Board(private val state: mutable.Buffer[mutable.Buffer[Field]] = Board.def
     for (y <- 0 until 9) {
       for (x <- 0 until 9) {
         val c = if (BoardLocation.IsLegal(x, y)) {
-          state(x)(y).player match {
+          state(y)(x).player match {
             case Some(Player.Black) => 'B'
             case Some(Player.White) => 'W'
             case _ => '.'
@@ -76,7 +76,7 @@ class Board(private val state: mutable.Buffer[mutable.Buffer[Field]] = Board.def
       System.out.print("  ")
       for (x <- 0 until 9) {
         val c = if (BoardLocation.IsLegal(x, y)) {
-          state(x)(y).stone match {
+          state(y)(x).stone match {
             case Some(Stone.Pebble) => 'a'
             case Some(Stone.Rock) => 'b'
             case Some(Stone.Boulder) => 'c'
@@ -87,7 +87,7 @@ class Board(private val state: mutable.Buffer[mutable.Buffer[Field]] = Board.def
       }
       System.out.print("  ")
       for (x <- 0 until 9) {
-        val s = if (BoardLocation.IsLegal(x, y)) f"${state(x)(y).height}%2d" else "  "
+        val s = if (BoardLocation.IsLegal(x, y)) f"${state(y)(x).height}%2d" else "  "
         System.out.print(" " + s)
       }
       System.out.println()

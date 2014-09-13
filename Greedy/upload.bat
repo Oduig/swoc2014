@@ -1,0 +1,4 @@
+del cookie.txt
+D:\Programs\Curl\curl.exe --user Guidoffrey:baratheon --cookie-jar ./cookie.txt http://swoc.jdub.nl/#/login
+D:\Programs\Curl\curl.exe --connect-timeout 60 -X POST -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" -H "Accept-Encoding: gzip, deflate" -H "Accept-Language: en-us,en;q=0.7,nl;q=0.3" -H "Connection: keep-alive" --cookie ./cookie.txt -H "Host: swoc.jdub.nl" -H "Referer: http://swoc.jdub.nl/" -H "User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:31.0) Gecko/20100101 Firefox/31.0" -H "Content-Type: multipart/form-data; boundary=---------------------------229832291221750" --data-binary $"-----------------------------229832291221750\r\nContent-Disposition: form-data; name=\"file\"; filename=\"greedy.zip\"\r\nContent-Type: application/octet-stream\r\n\r\n-----------------------------229832291221750--\r\n" http://swoc.jdub.nl/api/bot/upload
+PAUSE

@@ -1,12 +1,15 @@
 package com.gjos.scala.swoc
 
-import java.io.{BufferedReader, IOException, InputStreamReader}
+import java.io.{BufferedReader, InputStreamReader}
 import com.gjos.scala.swoc.protocol.{ProcessedMove, Move, MoveRequest, Player}
 
-class Engine(private val bot: IBot) extends AutoCloseable {
+class Engine(private val bot: IBot, private val inReader: BufferedReader, private val inStreamReader: InputStreamReader) extends AutoCloseable {
 
-  private final val inStreamReader = new InputStreamReader(System.in)
-  private final val inReader = new BufferedReader(inStreamReader)
+  def close() {
+    inReader.close()
+    inStreamReader.close()
+  }
+
   private var botColor: Option[Player] = None
 
   def run() {
@@ -48,11 +51,6 @@ class Engine(private val bot: IBot) extends AutoCloseable {
     val processedMove: ProcessedMove = JsonConverters.createProcessedMove(readMessage())
     bot.handleProcessedMove(processedMove)
     processedMove.winner
-  }
-
-  def close() {
-    inReader.close()
-    inStreamReader.close()
   }
 
   private def readMessage() = inReader.readLine
