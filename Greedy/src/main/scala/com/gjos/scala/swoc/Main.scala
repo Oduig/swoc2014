@@ -1,10 +1,9 @@
 package com.gjos.scala.swoc
 
-import gos.bot.{Bot, Engine}
 
 object Main extends App {
-  val bot = new Bot
-  val engine = new Engine(bot)
+  val bot = new Bot2
+  val engine = new Engine2(bot)
   try {
     engine.run()
   } catch {
