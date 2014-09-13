@@ -7,20 +7,58 @@ class Board(private val state: mutable.Buffer[mutable.Buffer[Field]] = Board.def
   def getField(location: BoardLocation): Field = getField(location.x, location.y)
   def getField(x: Int, y: Int): Field = state(x)(y)
 
+  /**
+   * Returns the current board's utility from a given player's perspective.
+   * Rates the board by the difference between us and them,
+   * where score is determined by how close we are to having a type of stones eliminated
+   */
+  def score(us: Player): Float = {
+    val them = if (us == Player.Black) Player.White else Player.Black
+
+    val myScore = stoneScore(us).min
+    val theirScore = stoneScore(them).min
+
+    myScore - theirScore
+  }
+
+  private val heightMultiplier = 1f
+  private def stoneCount(s: Stone)(p: Player) = scoreFields { field =>
+    if (field.player == Some(p) && field.stone == Some(s)) field.height * heightMultiplier else 0
+  }
+  private val pebbleCount: Player => Float = stoneCount(Stone.Pebble)
+  private val rockCount: Player => Float = stoneCount(Stone.Rock)
+  private val boulderCount: Player => Float = stoneCount(Stone.Boulder)
+  private def stoneScore(p: Player) = List(pebbleCount(p) / 15f, rockCount(p) / 9f, boulderCount(p) / 5f)
+
+  private def scoreFields[T: Numeric](predicate: Field => T): T = {
+    state.map(
+      row => row.map(predicate).sum
+    ).sum
+  }
+
+  def copy() = new Board(state)
+  def applyMove(move: Move): Board = {
+    val newBoard = copy()
+    move.moveType match {
+      case MoveType.Pass => newBoard
+      case MoveType.Attack =>
+        val fromField = getField(move.from.get)
+        newBoard.setField(move.from.get, Field.empty)
+        newBoard.setField(move.to.get, Field(fromField.player, fromField.stone, fromField.height))
+      case MoveType.Strengthen =>
+        val fromField = getField(move.from.get)
+        newBoard.setField(move.from.get, Field.empty)
+        newBoard.setField(move.to.get, Field(fromField.player, fromField.stone, fromField.height + 1))
+    }
+    newBoard
+  }
+
   def setField(location: BoardLocation, field: Field) = {
-    require(field.player.nonEmpty && field.stone.nonEmpty && field.height > 0, "Cannot set empty field")
     state(location.x)(location.y) = field
   }
 
-  def clearField(location: BoardLocation) {
-    state(location.x)(location.y) = Field.empty
-  }
-
-  def totalCount(player: Player, stone: Stone): Int = {
-    state.map(
-      row => row.count(field => field.player == Some(player) && field.stone == Some(stone))
-    ).sum
-  }
+  def totalCount(player: Player, stone: Stone): Int =
+    scoreFields(field => if (field.player == Some(player) && field.stone == Some(stone)) 1 else 0)
 
   def dump() {
     System.out.print("-- owners --------  -- stones --------  -- heights ----------------")

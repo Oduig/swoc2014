@@ -8,7 +8,6 @@ mainClass in Compile := Some("com.gjos.scala.swoc.Main")
 
 libraryDependencies ++= Seq(
   "org.scalatest" % "scalatest_2.11" % "2.2.1" % "test",
-  "com.google.code.gson" % "gson" % "2.3",
   "com.github.pathikrit" %% "dijon" % "0.2.4"
 )
 

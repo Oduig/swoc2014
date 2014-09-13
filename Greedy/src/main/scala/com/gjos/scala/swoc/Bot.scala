@@ -13,25 +13,30 @@ class Bot(private var myColor: Option[Player]) extends IBot {
   }
 
   def handleMove(request: MoveRequest): Move = request.allowedMoves match {
-    case x :: Nil if x == MoveType.Attack => getRandomAttack(request.board)
-    case _ => getRandomMove(request.board)
+    case x :: Nil if x == MoveType.Attack => getAttack(request.board)
+    case _ => getMove(request.board)
   }
 
   def handleProcessedMove(move: ProcessedMove) {
   }
 
-  private def getRandomMove(board: Board): Move = {
-    val allLocations: Vector[BoardLocation] = Bot.allLegalBoardLocations().toVector
+  private def getMove(board: Board): Move = {
+    val allMoves = allLegalMoves(board)
+    pickMove(board, allMoves)
+  }
 
-    val myLocations: Vector[BoardLocation] = for {
-      location <- allLocations
-      if board.getField(location).player == myColor
-    } yield location
+  private def allLegalMoves(board: Board): Vector[Move] = {
+    for {
+      fromLocation <- Bot.allLegalBoardLocations
+      fromField = board.getField(fromLocation)
+      if fromField.player == myColor
+      toLocation <- Bot.getPossibleToLocations(board, fromLocation)
+      toField = board.getField(toLocation)
+      if fromField.height >= toField.height || toField.player == fromField.player
+    } yield createMove(board, fromLocation, toLocation)
+  }
 
-    val fromLocation: BoardLocation = myLocations(random.nextInt(myLocations.size))
-    val possibleToLocations: List[BoardLocation] = Bot.getPossibleToLocations(board, fromLocation)
-    val toLocation: BoardLocation = possibleToLocations(random.nextInt(possibleToLocations.size))
-
+  private def createMove(board: Board, fromLocation: BoardLocation, toLocation: BoardLocation) = {
     if (toLocation == fromLocation) {
       new Move(MoveType.Pass, None, None)
     } else if (board.getField(toLocation).player != myColor) {
@@ -41,12 +46,23 @@ class Bot(private var myColor: Option[Player]) extends IBot {
     }
   }
 
-  private def getRandomAttack(board: Board): Move = {
-    var move: Move = getRandomMove(board)
-    while (move.moveType != MoveType.Attack) {
-      move = getRandomMove(board)
+  private def getAttack(board: Board): Move = {
+    val allAttacks = allLegalMoves(board) collect {
+      case legalMove if legalMove.to.nonEmpty && board.getField(legalMove.to.get).player != myColor => legalMove
     }
-    move
+    pickMove(board: Board, allAttacks)
+  }
+
+  private def pickMove(board: Board, moves: Vector[Move]) = {
+    val moveByScore: Vector[(Float, Move)] = for {
+      move <- moves
+      score = board.applyMove(move).score(myColor.get)
+    } yield score -> move
+    val maxScore = moveByScore.map(_._1).max
+    val bestMoves: Vector[Move] = moveByScore collect {
+      case (score, move) if score == maxScore => move
+    }
+    bestMoves(random.nextInt(bestMoves.size))
   }
 }
 
@@ -97,10 +113,10 @@ object Bot {
     (fromOwner != None) && (toOwner != None) && ((fromOwner == toOwner) || fromHeight >= toHeight)
   }
 
-  private def allLegalBoardLocations(): List[BoardLocation] = {
+  private def allLegalBoardLocations: Vector[BoardLocation] = {
     for {
-      y <- (0 until 9).toList
-      x <- (0 until 9).toList
+      y <- (0 until 9).toVector
+      x <- (0 until 9).toVector
       if BoardLocation.IsLegal(x, y)
     } yield new BoardLocation(x, y)
   }
