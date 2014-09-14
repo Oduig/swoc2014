@@ -28,7 +28,7 @@ class Board(private val state: mutable.Buffer[mutable.Buffer[Field]] = Board.def
   private val pebbleCount: Player => Float = stoneCount(Stone.Pebble)
   private val rockCount: Player => Float = stoneCount(Stone.Rock)
   private val boulderCount: Player => Float = stoneCount(Stone.Boulder)
-  private def stoneScore(p: Player) = List(pebbleCount(p) / 15f, rockCount(p) / 9f, boulderCount(p) / 5f)
+  private def stoneScore(p: Player) = List(pebbleCount(p), rockCount(p), boulderCount(p))
 
   private def scoreFields[T: Numeric](predicate: Field => T): T = {
     state.map(
@@ -41,7 +41,7 @@ class Board(private val state: mutable.Buffer[mutable.Buffer[Field]] = Board.def
     for (row <- state) yield {
       val newRow = mutable.Buffer[Field]()
       newState.append(newRow)
-      row.copyToBuffer(newRow)
+      for (field <- row) newRow.append(field)
     }
     new Board(newState)
   }
