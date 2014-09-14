@@ -16,16 +16,16 @@ class BoardSpec extends WordSpec with Matchers {
 
   "Board" should {
     "rate a situation correctly" in {
-      board.utility(us) should be (4.0)
-      board.applyMove(badMove).utility(us) should be (3.0)
+      board.score(us) should be (4f +- 0.9f)
+      board.applyMove(badMove).score(us) should be (3f +- 0.9f)
       val goodMove = Move(MoveType.Attack, Some(BoardLocation fromLabel "E4"), Some(BoardLocation fromLabel "D3"))
       val boardAfter = board.applyMove(goodMove)
-      boardAfter.utility(us) should be (5.0)
+      boardAfter.score(us) should be (5f +- 0.9f)
     }
 
     "not make a move which results in a worse score" in {
-      val before = board.utility(us)
-      val after = board.applyMove(badMove).utility(us)
+      val before = board.score(us)
+      val after = board.applyMove(badMove).score(us)
       before should be >= after
     }
   }

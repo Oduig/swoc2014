@@ -1,36 +1,26 @@
 package com.gjos.scala.swoc.protocol
 
 import scala.collection.mutable
+import com.gjos.scala.swoc.Score
 
 class Board(private val state: mutable.Buffer[mutable.Buffer[Field]] = Board.defaultState) {
 
   def getField(location: BoardLocation): Field = getField(location.x, location.y)
   def getField(x: Int, y: Int): Field = state(y)(x)
 
-  /**
-   * Returns the current board's utility from a given player's perspective.
-   * Rates the board by the difference between us and them,
-   * where score is determined by how close we are to having a type of stones eliminated
-   */
-  def utility(us: Player): Float = {
-    val them = if (us == Player.Black) Player.White else Player.Black
+  def score(us: Player) = Score.score(this, us)
+  def stonesLeft(p: Player) = List(pebbleCount(p), rockCount(p), boulderCount(p))
 
-    val myScore = stoneScore(us).min
-    val theirScore = stoneScore(them).min
-
-    myScore - theirScore
-  }
-
-  private val heightMultiplier = 1f
+  private val heightMultiplier = 1.1f
   private def stoneCount(s: Stone)(p: Player) = scoreFields { field =>
     if (field.player == Some(p) && field.stone == Some(s)) field.height * heightMultiplier else 0
   }
-  private val pebbleCount: Player => Float = stoneCount(Stone.Pebble)
-  private val rockCount: Player => Float = stoneCount(Stone.Rock)
-  private val boulderCount: Player => Float = stoneCount(Stone.Boulder)
-  def stoneScore(p: Player) = List(pebbleCount(p), rockCount(p), boulderCount(p))
 
-  private def scoreFields[T: Numeric](predicate: Field => T): T = {
+  val pebbleCount: Player => Float = stoneCount(Stone.Pebble)
+  val rockCount: Player => Float = stoneCount(Stone.Rock)
+  val boulderCount: Player => Float = stoneCount(Stone.Boulder)
+
+  def scoreFields[T: Numeric](predicate: Field => T): T = {
     state.map(
       row => row.map(predicate).sum
     ).sum

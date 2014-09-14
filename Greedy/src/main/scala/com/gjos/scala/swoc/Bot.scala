@@ -32,9 +32,7 @@ class Bot(private var myColor: Option[Player]) {
 
   private def getAttack(board: Board): Move = {
     Stopwatch.tell("Finding attack...")
-    val allAttacks = Bot.allValidMoves(board, myColor) collect {
-      case validMove if validMove.to.nonEmpty && board.getField(validMove.to.get).player != myColor => validMove
-    }
+    val allAttacks = Bot.allValidMoves(board, myColor) filter (_.moveType == MoveType.Attack)
     Stopwatch.tell("Picking move...")
     val move = pickMove(board: Board, allAttacks)
     Stopwatch.tell("Moving.")
@@ -44,7 +42,7 @@ class Bot(private var myColor: Option[Player]) {
   private def pickMove(board: Board, moves: Vector[Move]) = {
     val moveByScore: Vector[(Float, Move)] = for {
       move <- moves
-      score = board.applyMove(move).utility(myColor.get)
+      score = board.applyMove(move).score(myColor.get)
     } yield score -> move
     val maxScore = moveByScore.map(_._1).max
     val bestMoves: Vector[Move] = moveByScore collect {
