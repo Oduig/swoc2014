@@ -12,7 +12,7 @@ class Board(private val state: mutable.Buffer[mutable.Buffer[Field]] = Board.def
    * Rates the board by the difference between us and them,
    * where score is determined by how close we are to having a type of stones eliminated
    */
-  def score(us: Player): Float = {
+  def utility(us: Player): Float = {
     val them = if (us == Player.Black) Player.White else Player.Black
 
     val myScore = stoneScore(us).min
@@ -28,7 +28,7 @@ class Board(private val state: mutable.Buffer[mutable.Buffer[Field]] = Board.def
   private val pebbleCount: Player => Float = stoneCount(Stone.Pebble)
   private val rockCount: Player => Float = stoneCount(Stone.Rock)
   private val boulderCount: Player => Float = stoneCount(Stone.Boulder)
-  private def stoneScore(p: Player) = List(pebbleCount(p), rockCount(p), boulderCount(p))
+  def stoneScore(p: Player) = List(pebbleCount(p), rockCount(p), boulderCount(p))
 
   private def scoreFields[T: Numeric](predicate: Field => T): T = {
     state.map(
@@ -53,17 +53,17 @@ class Board(private val state: mutable.Buffer[mutable.Buffer[Field]] = Board.def
       case MoveType.Attack =>
         val fromField = getField(move.from.get)
         newBoard.setField(move.from.get, Field.empty)
-        newBoard.setField(move.to.get, Field(fromField.player, fromField.stone, fromField.height))
+        newBoard.setField(move.to.get, fromField)
       case MoveType.Strengthen =>
         val fromField = getField(move.from.get)
         newBoard.setField(move.from.get, Field.empty)
-        newBoard.setField(move.to.get, Field(fromField.player, fromField.stone, fromField.height + 1))
+        newBoard.setField(move.to.get, fromField.higher)
     }
     newBoard
   }
 
   def setField(location: BoardLocation, field: Field) = {
-    state(location.x)(location.y) = field
+    state(location.y)(location.x) = field
   }
 
   def totalCount(player: Player, stone: Stone): Int =
@@ -73,7 +73,7 @@ class Board(private val state: mutable.Buffer[mutable.Buffer[Field]] = Board.def
     System.out.print("-- owners --------  -- stones --------  -- heights ----------------")
     for (y <- 0 until 9) {
       for (x <- 0 until 9) {
-        val c = if (BoardLocation.IsLegal(x, y)) {
+        val c = if (BoardLocation.IsValid(x, y)) {
           state(y)(x).player match {
             case Some(Player.Black) => 'B'
             case Some(Player.White) => 'W'
@@ -84,7 +84,7 @@ class Board(private val state: mutable.Buffer[mutable.Buffer[Field]] = Board.def
       }
       System.out.print("  ")
       for (x <- 0 until 9) {
-        val c = if (BoardLocation.IsLegal(x, y)) {
+        val c = if (BoardLocation.IsValid(x, y)) {
           state(y)(x).stone match {
             case Some(Stone.Pebble) => 'a'
             case Some(Stone.Rock) => 'b'
@@ -96,17 +96,17 @@ class Board(private val state: mutable.Buffer[mutable.Buffer[Field]] = Board.def
       }
       System.out.print("  ")
       for (x <- 0 until 9) {
-        val s = if (BoardLocation.IsLegal(x, y)) f"${state(y)(x).height}%2d" else "  "
+        val s = if (BoardLocation.IsValid(x, y)) f"${state(y)(x).height}%2d" else "  "
         System.out.print(" " + s)
       }
-      System.out.println()
+      println()
     }
-    System.out.println("------------------  ------------------  ---------------------------")
+    println("------------------  ------------------  ---------------------------")
     System.out.print("White: "
       + totalCount(Player.White, Stone.Pebble) + " a, "
       + totalCount(Player.White, Stone.Rock) + " b, "
       + totalCount(Player.White, Stone.Boulder) + " c")
-    System.out.println(s"  Black: "
+    println(s"  Black: "
       + totalCount(Player.Black, Stone.Pebble) + " a, "
       + totalCount(Player.Black, Stone.Rock) + " b, "
       + totalCount(Player.Black, Stone.Boulder) + " c")

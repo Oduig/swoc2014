@@ -5,6 +5,8 @@ case class Field (player: Option[Player], stone: Option[Stone], height: Int) {
     case (None, None, 0) => 0
     case (Some(p), Some(s), h) if h > 0 => p.value * (h * 4 + s.value)
   }
+
+  def higher = Field(player, stone, height + 1)
 }
 
 object Field {

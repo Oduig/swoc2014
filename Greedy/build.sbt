@@ -10,7 +10,7 @@ assemblySettings
 
 libraryDependencies ++= Seq(
   "org.scalatest" % "scalatest_2.11" % "2.2.1" % "test",
-  "com.github.pathikrit" %% "dijon" % "0.2.4"
+  "com.googlecode.json-simple" % "json-simple" % "1.1.1"
 )
 
 unmanagedJars in Compile <++= baseDirectory map { base =>

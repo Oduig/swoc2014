@@ -2,10 +2,10 @@ package com.gjos.scala.swoc
 
 import java.util.Random
 import com.gjos.scala.swoc.protocol._
-import scala.collection.mutable.ListBuffer
 import com.gjos.scala.swoc.protocol.InitiateRequest
+import com.gjos.scala.swoc.util.Stopwatch
 
-class Bot(private var myColor: Option[Player]) extends IBot {
+class Bot(private var myColor: Option[Player]) {
   private val random = new Random
 
   def handleInitiate(request: InitiateRequest) {
@@ -18,45 +18,33 @@ class Bot(private var myColor: Option[Player]) extends IBot {
   }
 
   def handleProcessedMove(move: ProcessedMove) {
+    //println(move)
   }
 
   private def getMove(board: Board): Move = {
-    val allMoves = allLegalMoves(board)
-    pickMove(board, allMoves)
-  }
-
-  private def allLegalMoves(board: Board): Vector[Move] = {
-    for {
-      fromLocation <- Bot.allLegalBoardLocations
-      fromField = board.getField(fromLocation)
-      if fromField.player == myColor
-      toLocation <- Bot.getPossibleToLocations(board, fromLocation)
-      toField = board.getField(toLocation)
-      if fromField.height >= toField.height || toField.player == fromField.player
-    } yield createMove(board, fromLocation, toLocation)
-  }
-
-  private def createMove(board: Board, fromLocation: BoardLocation, toLocation: BoardLocation) = {
-    if (toLocation == fromLocation) {
-      new Move(MoveType.Pass, None, None)
-    } else if (board.getField(toLocation).player != myColor) {
-      new Move(MoveType.Attack, Some(fromLocation), Some(toLocation))
-    } else {
-      new Move(MoveType.Strengthen, Some(fromLocation), Some(toLocation))
-    }
+    Stopwatch.tell("Finding moves...")
+    val allMoves = Bot.allValidMoves(board, myColor)
+    Stopwatch.tell("Picking move...")
+    val move = pickMove(board, allMoves)
+    Stopwatch.tell("Moving.")
+    move
   }
 
   private def getAttack(board: Board): Move = {
-    val allAttacks = allLegalMoves(board) collect {
-      case legalMove if legalMove.to.nonEmpty && board.getField(legalMove.to.get).player != myColor => legalMove
+    Stopwatch.tell("Finding attack...")
+    val allAttacks = Bot.allValidMoves(board, myColor) collect {
+      case validMove if validMove.to.nonEmpty && board.getField(validMove.to.get).player != myColor => validMove
     }
-    pickMove(board: Board, allAttacks)
+    Stopwatch.tell("Picking move...")
+    val move = pickMove(board: Board, allAttacks)
+    Stopwatch.tell("Moving.")
+    move
   }
 
   private def pickMove(board: Board, moves: Vector[Move]) = {
     val moveByScore: Vector[(Float, Move)] = for {
       move <- moves
-      score = board.applyMove(move).score(myColor.get)
+      score = board.applyMove(move).utility(myColor.get)
     } yield score -> move
     val maxScore = moveByScore.map(_._1).max
     val bestMoves: Vector[Move] = moveByScore collect {
@@ -67,33 +55,24 @@ class Bot(private var myColor: Option[Player]) extends IBot {
 }
 
 object Bot {
-  private def getPossibleToLocations(board: Board, fromLocation: BoardLocation): List[BoardLocation] = {
-    val north = (0, -1)
-    val south = (0, 1)
-    val east = (1, 0)
-    val west = (1, 0)
-    val northWest = (-1, -1)
-    val southEast = (1, 1)
+  def getPossibleToLocations(board: Board, fromLocation: BoardLocation): List[BoardLocation] = {
+    val targets = Direction.allDirections.map(getFirstNonEmptyInDirection(board, fromLocation, _))
 
-    val directions = List(north, south, east, west, northWest, southEast) map {
-      case (x, y) => getFirstNonEmptyInDirection(board, fromLocation, x, y)
-    }
-
-    val validDirections = directions collect {
-      case Some(direction) if isValidMove(board, fromLocation, direction) => direction
+    val validDirections = targets collect {
+      case Some(target) if isValidMove(board, fromLocation, target) => target
     }
     fromLocation :: validDirections
   }
 
-  private def getFirstNonEmptyInDirection(board: Board, location: BoardLocation, directionX: Int, directionY: Int): Option[BoardLocation] = {
+  def getFirstNonEmptyInDirection(board: Board, location: BoardLocation, direction: Direction): Option[BoardLocation] = {
     var x: Int = location.x
     var y: Int = location.y
     do {
-      x += directionX
-      y += directionY
-    } while (BoardLocation.IsLegal(x, y) && board.getField(x, y).player.isEmpty)
+      x += direction.x
+      y += direction.y
+    } while (BoardLocation.IsValid(x, y) && board.getField(x, y).player.isEmpty)
 
-    if (!BoardLocation.IsLegal(x, y)) {
+    if (!BoardLocation.IsValid(x, y)) {
       None
     } else {
       val newLocation: BoardLocation = new BoardLocation(x, y)
@@ -105,7 +84,7 @@ object Bot {
     }
   }
 
-  private def isValidMove(board: Board, from: BoardLocation, to: BoardLocation): Boolean = {
+  def isValidMove(board: Board, from: BoardLocation, to: BoardLocation): Boolean = {
     val fromOwner = board.getField(from).player
     val toOwner = board.getField(to).player
     val fromHeight: Int = board.getField(from).height
@@ -113,11 +92,24 @@ object Bot {
     (fromOwner != None) && (toOwner != None) && ((fromOwner == toOwner) || fromHeight >= toHeight)
   }
 
-  private def allLegalBoardLocations: Vector[BoardLocation] = {
+  def allValidMoves(board: Board, us: Option[Player]): Vector[Move] = {
     for {
-      y <- (0 until 9).toVector
-      x <- (0 until 9).toVector
-      if BoardLocation.IsLegal(x, y)
-    } yield new BoardLocation(x, y)
+      fromLocation <- BoardLocation.allValidBoardLocations
+      fromField = board.getField(fromLocation)
+      if fromField.player == us
+      toLocation <- Bot.getPossibleToLocations(board, fromLocation)
+      toField = board.getField(toLocation)
+      if fromField.height >= toField.height || toField.player == us
+    } yield createMove(board, us, fromLocation, toLocation)
+  }
+
+  private def createMove(board: Board, us: Option[Player], fromLocation: BoardLocation, toLocation: BoardLocation) = {
+    if (toLocation == fromLocation) {
+      new Move(MoveType.Pass, None, None)
+    } else if (board.getField(toLocation).player != us) {
+      new Move(MoveType.Attack, Some(fromLocation), Some(toLocation))
+    } else {
+      new Move(MoveType.Strengthen, Some(fromLocation), Some(toLocation))
+    }
   }
 }

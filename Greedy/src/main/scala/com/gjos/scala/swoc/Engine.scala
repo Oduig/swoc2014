@@ -1,14 +1,9 @@
 package com.gjos.scala.swoc
 
-import java.io.{BufferedReader, InputStreamReader}
 import com.gjos.scala.swoc.protocol.{ProcessedMove, Move, MoveRequest, Player}
+import com.gjos.scala.swoc.util.JsonConverters
 
-class Engine(private val bot: IBot, private val inReader: BufferedReader, private val inStreamReader: InputStreamReader) extends AutoCloseable {
-
-  def close() {
-    inReader.close()
-    inStreamReader.close()
-  }
+class Engine(private val bot: Bot, private val ioManager: IOManager) {
 
   private var botColor: Option[Player] = None
 
@@ -21,13 +16,13 @@ class Engine(private val bot: IBot, private val inReader: BufferedReader, privat
   }
 
   private def doInitiateRequest() {
-    val initRequest = JsonConverters.createInitiateRequest(readMessage())
+    val initRequest = JsonConverters.createInitiateRequest(ioManager.readLine())
     botColor = Some(initRequest.color)
     bot.handleInitiate(initRequest)
   }
 
   private def doFirstRound(): Option[Player] = botColor match {
-    case Some(player) if player == Player.White =>
+    case Some(Player.White) =>
       handleMoveRequest()
       handleProcessedMove() orElse handleProcessedMove() orElse handleProcessedMove()
     case _ => handleProcessedMove()
@@ -42,19 +37,15 @@ class Engine(private val bot: IBot, private val inReader: BufferedReader, privat
   }
 
   private def handleMoveRequest() {
-    val moveRequest: MoveRequest = JsonConverters.createMoveRequest(readMessage())
+    val moveRequest: MoveRequest = JsonConverters.createMoveRequest(ioManager.readLine())
     val move: Move = bot.handleMove(moveRequest)
-    writeMessage(JsonConverters.toJson(move))
+    ioManager.writeLine(JsonConverters.toJson(move))
   }
 
   private def handleProcessedMove(): Option[Player] = {
-    val processedMove: ProcessedMove = JsonConverters.createProcessedMove(readMessage())
+    val processedMove: ProcessedMove = JsonConverters.createProcessedMove(ioManager.readLine())
     bot.handleProcessedMove(processedMove)
     processedMove.winner
   }
-
-  private def readMessage() = inReader.readLine
-
-  private def writeMessage(message: String) = System.out.println(message)
 }
 

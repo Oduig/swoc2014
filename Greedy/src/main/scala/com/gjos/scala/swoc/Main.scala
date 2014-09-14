@@ -4,13 +4,12 @@ import java.io.{BufferedReader, InputStreamReader}
 
 
 object Main extends App {
-  private val inStreamReader = new InputStreamReader(System.in)
-  private val inReader = new BufferedReader(inStreamReader)
+  val ioManager = IOManager.runMode
   val bot = new Bot(None)
-  val engine = new Engine(bot, inReader, inStreamReader)
+  val engine = new Engine(bot, ioManager)
   try {
     engine.run()
   } catch {
-    case e: Exception => e.printStackTrace()
+    case e: RuntimeException => e.printStackTrace()
   }
 }
