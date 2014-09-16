@@ -4,6 +4,9 @@ import java.util.Random
 import com.gjos.scala.swoc.protocol._
 import com.gjos.scala.swoc.protocol.InitiateRequest
 import com.gjos.scala.swoc.util.Stopwatch
+import scala.concurrent.blocking
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class Bot(private var myColor: Option[Player]) {
   private val random = new Random
@@ -13,26 +16,25 @@ class Bot(private var myColor: Option[Player]) {
     myColor = Some(request.color)
   }
 
-  def handleMove(request: MoveRequest, singleMoveTurn: Boolean): Move = request.allowedMoves match {
-    case x :: Nil if x == MoveType.Attack => bestMove(request.board, !singleMoveTurn)
-    case _ => bestMove(request.board, false)
-  }
-
   def handleProcessedMove(move: ProcessedMove) {
     //println(move)
   }
 
-  def bestMove(board: Board, haveExtraMove: Boolean, runTime: Long = 1000): Move = {
-    val time = new Stopwatch()
+  def handleMove(request: MoveRequest, singleMoveTurn: Boolean, runTime: Long = 1500): Move = request.allowedMoves match {
+    case x :: Nil if x == MoveType.Attack => bestMove(request.board, !singleMoveTurn, runTime)
+    case _ => bestMove(request.board, haveExtraMove = false, runTime)
+  }
 
+  def bestMove(board: Board, haveExtraMove: Boolean, runTime: Long): Move = {
+
+    var timedOut = false
     def leastEvenScore(p: Player) = if (p == us) Float.MinValue else Float.MaxValue
     def moreEven(p: Player)(x: Float, y: Float) = if (p == us) x > y else y > x
 
-    // Technically it is better to keep scoring children, but we have to stop when the time is up.
-    // Hence we need an algorithm to explore the best states in as many directions as possible.
-    // Keywords: BFS, minimax, alpha-beta pruning
-    def minimax(b: Board, firstMoveInPath: Move, p: Player, hasExtraMove: Boolean): (Move, Float) = {
-      if (time.sinceStart > runTime) {
+    def minimax(b: Board, firstMoveInPath: Move, p: Player, hasExtraMove: Boolean, depth: Int): (Move, Float) = {
+      if (timedOut) {
+        throw new InterruptedException("Minimax interrupted due to timeout.")
+      } else if (depth == 0) {
         firstMoveInPath -> b.score(us)
       } else {
         val validMoves = p.allValidMoves(b) filter (!hasExtraMove || _.moveType == MoveType.Attack)
@@ -45,7 +47,8 @@ class Bot(private var myColor: Option[Player]) {
               b applyMove validMove,
               if (firstMoveInPath == null) validMove else firstMoveInPath,
               nextPlayer,
-              nextHasExtraMove
+              nextHasExtraMove,
+              depth - 1
             )
           }
           // extra special bonus extension: don't take the first optimal move, but take a random optimal move
@@ -68,6 +71,19 @@ class Bot(private var myColor: Option[Player]) {
       }
     }
 
-    minimax(board, null, us, haveExtraMove)._1
+    val time = new Stopwatch(outputEnabled = true)
+    var depth = 1
+    var move: Move = null
+    Future(blocking(Thread sleep runTime)) onComplete (_ => timedOut = true)
+    try {
+      while (true) {
+        move = minimax(board, null, us, haveExtraMove, depth)._1
+        time.tell(s"Explored game state with $depth move lookahead.")
+        depth += 1
+      }
+    } catch {
+      case _: InterruptedException =>
+    }
+    move
   }
 }

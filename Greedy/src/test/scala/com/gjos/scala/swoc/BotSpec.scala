@@ -15,14 +15,12 @@ class BotSpec extends WordSpec with Matchers {
 
   "Bot" should {
     "should not miss a win-in-2" in {
-      val move = new Bot(Some(us)).handleMove(moveRequest("win-in-2.txt"), false)
-      println(move)
+      val move = new Bot(Some(us)).handleMove(moveRequest("win-in-2.txt"), singleMoveTurn = false)
       move should be (Move(MoveType.Attack, Some(BoardLocation fromLabel "I2"), Some(BoardLocation fromLabel "H3")))
     }
 
     "should not miss a loss-in-2" in {
-      val move = new Bot(Some(us)).handleMove(moveRequest("loss-in-2.txt"), false)
-      println(move)
+      val move = new Bot(Some(us)).handleMove(moveRequest("loss-in-2.txt"), singleMoveTurn = false)
       move should not be Move(MoveType.Attack, Some(BoardLocation fromLabel "I2"), Some(BoardLocation fromLabel "H3"))
     }
   }
