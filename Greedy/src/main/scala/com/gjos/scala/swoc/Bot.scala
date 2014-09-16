@@ -71,14 +71,14 @@ class Bot(private var myColor: Option[Player]) {
       }
     }
 
-    val time = new Stopwatch(outputEnabled = true)
+    //val time = new Stopwatch(outputEnabled = true)
     var depth = 1
     var move: Move = null
     Future(blocking(Thread sleep runTime)) onComplete (_ => timedOut = true)
     try {
       while (true) {
         move = minimax(board, null, us, haveExtraMove, depth)._1
-        time.tell(s"Explored game state with $depth move lookahead.")
+        //time.tell(s"Explored game state with $depth move lookahead.")
         depth += 1
       }
     } catch {
