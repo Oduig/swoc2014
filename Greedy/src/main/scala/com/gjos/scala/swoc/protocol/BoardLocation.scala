@@ -3,10 +3,10 @@ package com.gjos.scala.swoc.protocol
 case class BoardLocation(x: Int, y: Int) {
   require(BoardLocation.IsValid(x, y), "not a valid board location")
 
-  def ToLabel(): String = {
+  def label: String = {
     val xChar = 'A' + x
     val yChar = '1' + y - Math.max(x - 4, 0)
-    (xChar.toChar + yChar.toChar).toString
+    xChar.toChar.toString + yChar.toChar
   }
 }
 
@@ -22,7 +22,7 @@ object BoardLocation {
     BoardLocation(x, y)
   }
 
-  def allValidBoardLocations: Vector[BoardLocation] = {
+  lazy val allValidBoardLocations: Vector[BoardLocation] = {
     for {
       y <- (0 until 9).toVector
       x <- (0 until 9).toVector

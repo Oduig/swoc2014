@@ -23,7 +23,7 @@ class Engine(private val bot: Bot, private val ioManager: IOManager) {
 
   private def doFirstRound(): Option[Player] = botColor match {
     case Some(Player.White) =>
-      handleMoveRequest()
+      handleMoveRequest(singleMoveTurn = true)
       handleProcessedMove() orElse handleProcessedMove() orElse handleProcessedMove()
     case _ => handleProcessedMove()
   }
@@ -36,9 +36,9 @@ class Engine(private val bot: Bot, private val ioManager: IOManager) {
     handleMoveAndProcess() orElse handleMoveAndProcess() orElse handleProcessedMove() orElse handleProcessedMove()
   }
 
-  private def handleMoveRequest() {
+  private def handleMoveRequest(singleMoveTurn: Boolean = false) {
     val moveRequest: MoveRequest = JsonConverters.createMoveRequest(ioManager.readLine())
-    val move: Move = bot.handleMove(moveRequest)
+    val move = bot.handleMove(moveRequest, singleMoveTurn)
     ioManager.writeLine(JsonConverters.toJson(move))
   }
 

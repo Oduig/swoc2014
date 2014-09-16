@@ -1,6 +1,6 @@
 package com.gjos.scala.swoc.util
 
-object Stopwatch {
+class Stopwatch() {
   val t0 = System.currentTimeMillis
   private var previous = t0
 
@@ -19,4 +19,9 @@ object Stopwatch {
   }
 
   private def prettyPrint(t: Long) = f"Stopwatch: ${t / 1000f}%.2f seconds"
+}
+
+object Stopwatch {
+  private lazy val default = new Stopwatch()
+  def apply() = default
 }

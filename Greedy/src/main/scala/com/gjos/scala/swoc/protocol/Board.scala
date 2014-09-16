@@ -1,7 +1,7 @@
 package com.gjos.scala.swoc.protocol
 
 import scala.collection.mutable
-import com.gjos.scala.swoc.Score
+import com.gjos.scala.swoc.{Direction, Score}
 
 class Board(private val state: mutable.Buffer[mutable.Buffer[Field]] = Board.defaultState) {
 
@@ -9,18 +9,18 @@ class Board(private val state: mutable.Buffer[mutable.Buffer[Field]] = Board.def
   def getField(x: Int, y: Int): Field = state(y)(x)
 
   def score(us: Player) = Score.score(this, us)
-  def stonesLeft(p: Player) = List(pebbleCount(p), rockCount(p), boulderCount(p))
+  def stonesLeft(p: Player) = List(pebbleValue(p), rockValue(p), boulderValue(p))
 
   private val heightMultiplier = 1.1f
-  private def stoneCount(s: Stone)(p: Player) = scoreFields { field =>
+  private def stoneValue(s: Stone)(p: Player) = sumFieldsBy { field =>
     if (field.player == Some(p) && field.stone == Some(s)) field.height * heightMultiplier else 0
   }
 
-  val pebbleCount: Player => Float = stoneCount(Stone.Pebble)
-  val rockCount: Player => Float = stoneCount(Stone.Rock)
-  val boulderCount: Player => Float = stoneCount(Stone.Boulder)
+  val pebbleValue: Player => Float = stoneValue(Stone.Pebble)
+  val rockValue: Player => Float = stoneValue(Stone.Rock)
+  val boulderValue: Player => Float = stoneValue(Stone.Boulder)
 
-  def scoreFields[T: Numeric](predicate: Field => T): T = {
+  def sumFieldsBy[T: Numeric](predicate: Field => T): T = {
     state.map(
       row => row.map(predicate).sum
     ).sum
@@ -52,12 +52,49 @@ class Board(private val state: mutable.Buffer[mutable.Buffer[Field]] = Board.def
     newBoard
   }
 
+  def getPossibleToLocations(fromLocation: BoardLocation): List[BoardLocation] = {
+    val targets = Direction.allDirections.map(getFirstNonEmptyInDirection(fromLocation, _))
+
+    val validDirections = targets collect {
+      case Some(target) if isValidMove(fromLocation, target) => target
+    }
+    fromLocation :: validDirections
+  }
+
+  def getFirstNonEmptyInDirection(location: BoardLocation, direction: Direction): Option[BoardLocation] = {
+    var x: Int = location.x
+    var y: Int = location.y
+    do {
+      x += direction.x
+      y += direction.y
+    } while (BoardLocation.IsValid(x, y) && getField(x, y).player.isEmpty)
+
+    if (!BoardLocation.IsValid(x, y)) {
+      None
+    } else {
+      val newLocation: BoardLocation = new BoardLocation(x, y)
+      if (newLocation == location || getField(newLocation).player.isEmpty) {
+        None
+      } else {
+        Some(newLocation)
+      }
+    }
+  }
+
+  def isValidMove(from: BoardLocation, to: BoardLocation): Boolean = {
+    val fromOwner = getField(from).player
+    val toOwner = getField(to).player
+    val fromHeight: Int = getField(from).height
+    val toHeight: Int = getField(to).height
+    (fromOwner != None) && (toOwner != None) && ((fromOwner == toOwner) || fromHeight >= toHeight)
+  }
+
   def setField(location: BoardLocation, field: Field) = {
     state(location.y)(location.x) = field
   }
 
   def totalCount(player: Player, stone: Stone): Int =
-    scoreFields(field => if (field.player == Some(player) && field.stone == Some(stone)) 1 else 0)
+    sumFieldsBy(field => if (field.player == Some(player) && field.stone == Some(stone)) 1 else 0)
 
   def dump() {
     System.out.print("-- owners --------  -- stones --------  -- heights ----------------")

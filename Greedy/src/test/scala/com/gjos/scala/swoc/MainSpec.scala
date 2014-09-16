@@ -14,7 +14,7 @@ class MainSpec extends WordSpec with Matchers {
       val bot = new Bot(None)
       val engine = new Engine(bot, ioManager)
 
-      val maxRuntime = 1000.millis
+      val maxRuntime = 2000.millis
       Await.ready(Future(engine.run()), maxRuntime)
       val outLines = output().split(ioManager.newline).toList
       outLines.size should be (1)

@@ -13,19 +13,30 @@ object Score {
    * todo: clever lategame
    */
   def score(board: Board, us: Player): Float = {
-    val them = if (us == Player.Black) Player.White else Player.Black
+    val them = us.opponent
 
     val myScore = utility(board, us)
     val theirScore = utility(board, them)
 
-    if (theirScore <= 0) {
+    if (theirScore <= 0) { // If we can win this turn, the rest doesn't matter.
       Float.MaxValue
-    } else if (myScore <= 0) {
+    } else if (myScore <= 0) { // If we can't win and we make a losing move, it's bad.
       Float.MinValue
     } else {
       myScore - theirScore
     }
   }
 
-  def utility(b: Board, p: Player) = b.stonesLeft(p).min
+  /**
+   * Best primary metric seems to be the minimal type of stone,
+   * aka how close we are to death.
+   * Still, it's good to factor in other stones slightly,
+   * because we cannot always take their most valuable stone.
+   */
+  def utility(b: Board, p: Player) = {
+    val lowestFactor = 1f
+    val totalFactor = .01f
+    val stonesLeft = b.stonesLeft(p)
+    stonesLeft.min * lowestFactor + stonesLeft.sum * totalFactor
+  }
 }
