@@ -21,7 +21,7 @@ class BoardSpec extends WordSpec with Matchers {
       board.applyMove(badMove).score(us) should be (3f +- 0.9f)
       val goodMove = Move(MoveType.Attack, Some(BoardLocation fromLabel "E4"), Some(BoardLocation fromLabel "D3"))
       val boardAfter = board.applyMove(goodMove)
-      boardAfter.score(us) should be (5f +- 0.9f)
+      boardAfter.score(us) should be (6f +- 0.9f)
     }
 
     "not make a move which results in a worse score" in {

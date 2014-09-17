@@ -11,7 +11,7 @@ class Board(private val state: mutable.Buffer[mutable.Buffer[Field]] = Board.def
   def score(us: Player) = Score.score(this, us)
   def stonesLeft(p: Player) = List(pebbleValue(p), rockValue(p), boulderValue(p))
 
-  private val heightMultiplier = 1.1f
+  private val heightMultiplier = 1.2f
   private def stoneValue(s: Stone)(p: Player) = sumFieldsBy { field =>
     if (field.player == Some(p) && field.stone == Some(s)) field.height * heightMultiplier else 0
   }
