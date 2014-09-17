@@ -12,16 +12,31 @@ class BotSpec extends WordSpec with Matchers {
     JsonConverters.createMoveRequest(jsonBoard)
   }
   val us = Player.Black
+  val samples = 10
 
   "Bot" should {
-    "should not miss a win-in-2" in {
-      val move = new Bot(Some(us)).handleMove(moveRequest("win-in-2.txt"), singleMoveTurn = false)
-      move should be (Move(MoveType.Attack, Some(BoardLocation fromLabel "I2"), Some(BoardLocation fromLabel "H3")))
+    "should never miss a win-in-2" in {
+      Iterator.fill(samples)(()) foreach { _ =>
+        val move = new Bot(Some(us)).handleMove(moveRequest("win-in-2.txt"), singleMoveTurn = false)
+        move should be (Move(MoveType.Attack, Some(BoardLocation fromLabel "I2"), Some(BoardLocation fromLabel "H3")))
+      }
     }
 
-    "should not miss a loss-in-2" in {
-      val move = new Bot(Some(us)).handleMove(moveRequest("loss-in-2.txt"), singleMoveTurn = false)
-      move should not be Move(MoveType.Attack, Some(BoardLocation fromLabel "I2"), Some(BoardLocation fromLabel "H3"))
+    "should never miss a loss-in-2" in {
+      Iterator.fill(samples)(()) foreach { _ =>
+        val mr = moveRequest("loss-in-2.txt")
+        val move = new Bot(Some(us)).handleMove(mr, singleMoveTurn = false)
+        val wrong = Move(MoveType.Attack, Some(BoardLocation fromLabel "I2"), Some(BoardLocation fromLabel "H3"))
+        if (move == wrong) (mr.board applyMove move).dump()
+        move should not be wrong
+      }
+    }
+
+    "should not suicide even when only losing moves are available" in {
+      Iterator.fill(samples)(()) foreach { _ =>
+        val move = new Bot(Some(us)).handleMove(moveRequest("suicide.txt"), singleMoveTurn = false)
+        move should not be Move(MoveType.Strengthen, Some(BoardLocation fromLabel "G1"), Some(BoardLocation fromLabel "I1"))
+      }
     }
   }
 }

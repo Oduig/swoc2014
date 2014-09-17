@@ -20,7 +20,7 @@ object Score {
 
     if (theirScore <= 0) { // If we can win this turn, the rest doesn't matter.
       Float.MaxValue
-    } else if (myScore <= 0) { // If we can't win and we make a losing move, it's bad.
+    } else if (myScore <= 0) { // If we made a losing move, it's bad. But i
       Float.MinValue
     } else {
       myScore - theirScore
@@ -37,6 +37,7 @@ object Score {
     val lowestFactor = 1f
     val totalFactor = .01f
     val stonesLeft = b.stonesLeft(p)
-    stonesLeft.min * lowestFactor + stonesLeft.sum * totalFactor
+    val minScore = stonesLeft.min
+    if (minScore <= 0f) Float.MinValue else minScore * lowestFactor + stonesLeft.sum * totalFactor
   }
 }

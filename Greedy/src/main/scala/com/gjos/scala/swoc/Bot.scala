@@ -29,44 +29,61 @@ class Bot(private var myColor: Option[Player]) {
 
     var timedOut = false
     def leastEvenScore(p: Player) = if (p == us) Float.MinValue else Float.MaxValue
-    def moreEven(p: Player)(x: Float, y: Float) = if (p == us) x > y else y > x
+    def moreEven(p: Player)(x: Float, y: Float) = if (p == us) x > y else x < y
+    def minMaxAlpha(p: Player, alpha: Float, beta: Float, value: Float) = if (p == us) Math.max(alpha, value) else alpha
+    def minMaxBeta(p: Player, alpha: Float, beta: Float, value: Float) = if (p == us) beta else Math.min(beta, value)
 
-    def minimax(b: Board, firstMoveInPath: Move, p: Player, hasExtraMove: Boolean, depth: Int): (Move, Float) = {
+    def minimax(b: Board, firstMoveInPath: Move, p: Player, hasExtraMove: Boolean, depth: Int): (Move, Float, Int) = {
       if (timedOut) {
         throw new InterruptedException("Minimax interrupted due to timeout.")
-      } else if (depth == 0) {
-        firstMoveInPath -> b.score(us)
       } else {
-        val validMoves = p.allValidMoves(b) filter (!hasExtraMove || _.moveType == MoveType.Attack)
-        if (validMoves.isEmpty) {
-          firstMoveInPath -> (if (p == us) Float.MinValue else Float.MaxValue)
+        val currentScore = b.score(us)
+        // Stop at max recursion depth or when we have lost. If we have won, it's already covered.
+        if (depth == 0 || currentScore == Float.MinValue) {
+          (firstMoveInPath, currentScore, depth)
         } else {
-          val nextPlayer = if (hasExtraMove) p else p.opponent
-          val nextHasExtraMove = !hasExtraMove
-          val childScores = validMoves map { validMove => minimax(
+          val validMoves = p.allValidMoves(b) filter (!hasExtraMove || _.moveType == MoveType.Attack)
+          if (validMoves.isEmpty) {
+            (firstMoveInPath, leastEvenScore(p), depth)
+          } else {
+            val nextPlayer = if (hasExtraMove) p else p.opponent
+            val nextHasExtraMove = !hasExtraMove
+            val childScores = validMoves map { validMove => minimax(
               b applyMove validMove,
               if (firstMoveInPath == null) validMove else firstMoveInPath,
               nextPlayer,
               nextHasExtraMove,
               depth - 1
-            )
-          }
-          // extra special bonus extension: don't take the first optimal move, but take a random optimal move
-          val compare = moreEven(p) _
-          var evenestSoFar = leastEvenScore(p)
-          var optimalMoveIndices = Vector[Int]()
-          var i = 0
-          while (i < childScores.size) {
-            val thisone = childScores(i)._2
-            if (compare(thisone, evenestSoFar)) {
-              optimalMoveIndices = Vector[Int](i)
-              evenestSoFar = thisone
-            } else if (thisone == evenestSoFar) {
-              optimalMoveIndices = optimalMoveIndices :+ i
+            )}
+            //println(childScores)
+            // extra special bonus extension: don't take the first optimal move, take a random optimal move
+            val compare = moreEven(p) _
+            var evenestSoFar = leastEvenScore(p)
+            var deepestSoFar: Int = depth
+            var optimalMoveIndices = List[Int]()
+            var i = 0
+            while (i < childScores.size) {
+              val thisone = childScores(i)._2
+              if (compare(thisone, evenestSoFar)) {
+                optimalMoveIndices = List[Int](i)
+                evenestSoFar = thisone
+                deepestSoFar = childScores(i)._3
+              } else if (thisone == evenestSoFar) {
+                if (thisone == Float.MinValue) { // This is to maximize the length of the game when we are losing for sure
+                  if (childScores(i)._3 < deepestSoFar) {
+                    deepestSoFar = childScores(i)._3
+                    optimalMoveIndices = List(i)
+                  } else {}
+                } else {
+                  optimalMoveIndices = i :: optimalMoveIndices
+                }
+              }
+              i += 1
             }
-            i += 1
+            val best = childScores(optimalMoveIndices.toVector(random.nextInt(optimalMoveIndices.size)))
+            //println(best)
+            best
           }
-          childScores(optimalMoveIndices(random.nextInt(optimalMoveIndices.size)))
         }
       }
     }
@@ -74,16 +91,22 @@ class Bot(private var myColor: Option[Player]) {
     //val time = new Stopwatch(outputEnabled = true)
     var depth = 1
     var move: Move = null
+    var score: Float = 0
     Future(blocking(Thread sleep runTime)) onComplete (_ => timedOut = true)
     try {
-      while (true) {
-        move = minimax(board, null, us, haveExtraMove, depth)._1
-        //time.tell(s"Explored game state with $depth move lookahead.")
+      // We can stop if we find a game ender, and take any move.
+      // Otherwise, stop on timeout.
+      while (score < Float.MaxValue && score > Float.MinValue) {
+        val (m, s, _) = minimax(board, null, us, haveExtraMove, depth)
+        move = m
+        score = s
+        //time.tell(s"Explored game state with $depth move lookahead and found $m with score $s")
         depth += 1
       }
     } catch {
       case _: InterruptedException =>
     }
+    // If it's a sure loss, make a move that doesn't kill ourselves
     move
   }
 }
