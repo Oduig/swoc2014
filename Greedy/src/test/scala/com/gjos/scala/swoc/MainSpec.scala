@@ -9,7 +9,7 @@ import com.gjos.scala.swoc.util.Resource
 class MainSpec extends WordSpec with Matchers {
 
   "Main" should {
-    "Run without timing out" in {
+    "run without timing out" in {
       val (ioManager, output) = IOManager.fileMode(Resource.testResource("replay-timeout.txt"))
       val bot = new Bot(None)
       val engine = new Engine(bot, ioManager)
