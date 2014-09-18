@@ -38,5 +38,12 @@ class BotSpec extends WordSpec with Matchers {
         move should not be Move(MoveType.Strengthen, Some(BoardLocation fromLabel "G1"), Some(BoardLocation fromLabel "I1"))
       }
     }
+
+    "should not make a move that allows the opponent to prevent us from moving the next turn" in {
+      Iterator.fill(samples)(()) foreach { _ =>
+        val move = new Bot(Some(us)).handleMove(moveRequest("loss-by-lack-of-move.txt"), singleMoveTurn = false)
+        move should not be Move(MoveType.Attack, Some(BoardLocation fromLabel "H1"), Some(BoardLocation fromLabel "E1"))
+      }
+    }
   }
 }

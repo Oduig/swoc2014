@@ -7,6 +7,7 @@ import com.gjos.scala.swoc.util.Stopwatch
 import scala.concurrent.blocking
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.collection.mutable.ArrayBuffer
 
 class Bot(private var myColor: Option[Player]) {
   private val random = new Random
@@ -33,7 +34,7 @@ class Bot(private var myColor: Option[Player]) {
     def minMaxAlpha(p: Player, alpha: Float, beta: Float, value: Float) = if (p == us) Math.max(alpha, value) else alpha
     def minMaxBeta(p: Player, alpha: Float, beta: Float, value: Float) = if (p == us) beta else Math.min(beta, value)
 
-    def minimax(b: Board, firstMoveInPath: Move, p: Player, hasExtraMove: Boolean, depth: Int): (Move, Float, Int) = {
+    def minimax(b: Board, firstMoveInPath: Move, p: Player, hasExtraMove: Boolean, depth: Int, alpha: Float, beta: Float): (Move, Float, Int) = {
       if (timedOut) {
         throw new InterruptedException("Minimax interrupted due to timeout.")
       } else {
@@ -48,20 +49,40 @@ class Bot(private var myColor: Option[Player]) {
           } else {
             val nextPlayer = if (hasExtraMove) p else p.opponent
             val nextHasExtraMove = !hasExtraMove
-            val childScores = validMoves map { validMove => minimax(
-              b applyMove validMove,
-              if (firstMoveInPath == null) validMove else firstMoveInPath,
-              nextPlayer,
-              nextHasExtraMove,
-              depth - 1
-            )}
+            val childScores = ArrayBuffer.empty[(Move, Float, Int)]
+            var i: Int = 0
+            var newAlpha = alpha
+            var newBeta = beta
+            var cutoff = false
+            while (i < validMoves.size && !cutoff) {
+              val validMove = validMoves(i)
+              val outcome = minimax(
+                b applyMove validMove,
+                if (firstMoveInPath == null) validMove else firstMoveInPath,
+                nextPlayer,
+                nextHasExtraMove,
+                depth - 1,
+                newAlpha,
+                newBeta
+              )
+              if (p == us) {
+                newAlpha = Math.max(alpha, outcome._2)
+              } else {
+                newBeta = Math.min(beta, outcome._2)
+              }
+              if (newBeta < newAlpha) {
+                cutoff = true
+              }
+              childScores += outcome
+              i += 1
+            }
             //println(childScores)
             // extra special bonus extension: don't take the first optimal move, take a random optimal move
             val compare = moreEven(p) _
             var evenestSoFar = leastEvenScore(p)
             var deepestSoFar: Int = depth
             var optimalMoveIndices = List[Int]()
-            var i = 0
+            i = 0
             while (i < childScores.size) {
               val thisone = childScores(i)._2
               if (compare(thisone, evenestSoFar)) {
@@ -88,7 +109,7 @@ class Bot(private var myColor: Option[Player]) {
       }
     }
 
-    //val time = new Stopwatch(outputEnabled = true)
+    val time = new Stopwatch(outputEnabled = true)
     var depth = 1
     var move: Move = null
     var score: Float = 0
@@ -97,10 +118,10 @@ class Bot(private var myColor: Option[Player]) {
       // We can stop if we find a game ender, and take any move.
       // Otherwise, stop on timeout.
       while (score < Float.MaxValue && score > Float.MinValue) {
-        val (m, s, _) = minimax(board, null, us, haveExtraMove, depth)
+        val (m, s, _) = minimax(board, null, us, haveExtraMove, depth, Float.MinValue, Float.MaxValue)
         move = m
         score = s
-        //time.tell(s"Explored game state with $depth move lookahead and found $m with score $s")
+        time.tell(s"Explored game state with $depth move lookahead and found $m with score $s")
         depth += 1
       }
     } catch {
