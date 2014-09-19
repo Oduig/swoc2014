@@ -16,8 +16,8 @@ trait Player {
       var y = startY
       var prevX: Int = -1
       var prevY: Int = -1
-      while (x < 9 && y < 9 && x - y < 5 && y - x < 5) {
-        if (x == 4 && y == 4) {
+      while (x < 9 && y < 9) {
+        if ((x == 4 && y == 4) || (x - y >= 5 && y - x >= 5)) {
           prevX = -1
           prevY = -1
         } else {

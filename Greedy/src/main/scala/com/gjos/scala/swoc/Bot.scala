@@ -107,7 +107,7 @@ class Bot(private var myColor: Option[Player]) {
       }
     }
 
-    val time = new Stopwatch(outputEnabled = true)
+    val time = Stopwatch()
     var depth = 1
     var move: Move = null
     var score: Float = 0
