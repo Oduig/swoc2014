@@ -15,13 +15,13 @@ class ScoreSpec extends WordSpec with Matchers {
 
   "Score" should {
     "rate a won board as +infinity" in {
-      val goodMove = Move(MoveType.Attack, Some(BoardLocation(5, 8)), Some(BoardLocation(8, 8)))
+      val goodMove = Move(MoveType.Attack, Some((5, 8)), Some((8, 8)))
       val after = board("win-or-lose.txt") applyMove goodMove
       after.score(us) should be (Float.MaxValue)
     }
 
     "rate a lost board as -infinity" in {
-      val badMove = Move(MoveType.Attack, Some(BoardLocation(5, 2)), Some(BoardLocation(5, 8)))
+      val badMove = Move(MoveType.Attack, Some((5, 2)), Some((5, 8)))
       val after = board("win-or-lose.txt") applyMove badMove
       after.score(us) should be (Float.MinValue)
     }

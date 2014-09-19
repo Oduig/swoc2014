@@ -43,10 +43,10 @@ object JsonConverters {
     val moveObject = json.getAs[JSONObject]("Move")
     val moveType: Int = moveObject.getAs[String]("Type").toInt
     val fromLocation = Option(moveObject.getAs[Any]("From")) map {
-      case moveFrom: JSONObject => BoardLocation(moveFrom.getAs[Long]("X").toInt, moveFrom.getAs[Long]("Y").toInt)
+      case moveFrom: JSONObject => (moveFrom.getAs[Long]("X").toInt, moveFrom.getAs[Long]("Y").toInt)
     }
     val toLocation = Option(moveObject.getAs[Any]("To")) map {
-      case moveTo: JSONObject => BoardLocation(moveTo.getAs[Long]("X").toInt, moveTo.getAs[Long]("Y").toInt)
+      case moveTo: JSONObject => (moveTo.getAs[Long]("X").toInt, moveTo.getAs[Long]("Y").toInt)
     }
     val winnerPlayerNum: Int = json.getAs[String]("Winner").toInt
     val move = Move(MoveType.byValue(moveType), fromLocation, toLocation)
@@ -59,8 +59,8 @@ object JsonConverters {
     "To": <BoardLocation>
   }*/
   def toJson(move: Move): String = {
-    def boardLocationToJson(obl: Option[BoardLocation], key: String) = obl match {
-      case Some(BoardLocation(x, y)) => s""""$key": { "X": $x, "Y": $y }"""
+    def boardLocationToJson(obl: Option[(Int, Int)], key: String) = obl match {
+      case Some((x, y)) => s""""$key": { "X": $x, "Y": $y }"""
       case None => ""
     }
 

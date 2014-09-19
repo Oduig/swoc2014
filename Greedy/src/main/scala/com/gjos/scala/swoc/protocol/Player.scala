@@ -1,18 +1,53 @@
 package com.gjos.scala.swoc.protocol
 
+import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
+import com.gjos.scala.swoc.Direction
+
 trait Player {
   val value: Int
   val opponent: Player
 
-  def allValidMoves(board: Board): Vector[Move] = {
-    for {
-      fromLocation <- BoardLocation.allValidBoardLocations
-      fromField = board.getField(fromLocation)
-      if fromField.player == Some(this)
-      toLocation <- board.getPossibleToLocations(fromLocation)
-      toField = board.getField(toLocation)
-      if fromField.height >= toField.height || toField.player == Some(this)
-    } yield Move.fromTo(board, fromLocation, toLocation)
+  def allValidMoves(board: Board, attackOnly: Boolean = false): Vector[Move] = {
+    var v = Vector(Move(MoveType.Pass, None, None))
+
+    def discover(startX: Int, startY: Int, direction: Direction) {
+      var x = startX
+      var y = startY
+      var prevX: Int = -1
+      var prevY: Int = -1
+      while (x < 9 && y < 9 && x - y < 5 && y - x < 5) {
+        if (x == 4 && y == 4) {
+          prevX = -1
+          prevY = -1
+        } else {
+          val cur = board.getField(x, y)
+          if (cur.player.nonEmpty) {
+            if (prevX >= 0) {
+              val prev = board.getField(prevX, prevY)
+              if (prev.player.get == this && cur.player.get == this && !attackOnly) {
+                v = v :+ Move(MoveType.Strengthen, Some((x, y)), Some((prevX, prevY)))
+                v = v :+ Move(MoveType.Strengthen, Some((prevX, prevY)), Some((x, y)))
+              } else if (prev.player.get != this && cur.player.get == this && cur.height >= prev.height) {
+                v = v :+ Move(MoveType.Attack, Some((x, y)), Some((prevX, prevY)))
+              } else if (prev.player.get == this && cur.player.get != this && prev.height >= cur.height) {
+                v = v :+ Move(MoveType.Attack, Some((prevX, prevY)), Some((x, y)))
+              }
+            }
+            prevX = x
+            prevY = y
+          }
+        }
+        x += direction.x
+        y += direction.y
+      }
+    }
+
+    for (y <- 0 until 9) discover(0, y, Direction.NorthEast)
+    for (x <- 0 until 9) discover(x, 0, Direction.South)
+    for (y <- 0 until 5) discover(0, y, Direction.SouthEast)
+    for (x <- 0 until 5) discover(x, 0, Direction.SouthEast)
+    v
   }
 }
 

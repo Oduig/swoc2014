@@ -31,8 +31,6 @@ class Bot(private var myColor: Option[Player]) {
     var timedOut = false
     def leastEvenScore(p: Player) = if (p == us) Float.MinValue else Float.MaxValue
     def moreEven(p: Player)(x: Float, y: Float) = if (p == us) x > y else x < y
-    def minMaxAlpha(p: Player, alpha: Float, beta: Float, value: Float) = if (p == us) Math.max(alpha, value) else alpha
-    def minMaxBeta(p: Player, alpha: Float, beta: Float, value: Float) = if (p == us) beta else Math.min(beta, value)
 
     def minimax(b: Board, firstMoveInPath: Move, p: Player, hasExtraMove: Boolean, depth: Int, alpha: Float, beta: Float): (Move, Float, Int) = {
       if (timedOut) {
@@ -43,7 +41,7 @@ class Bot(private var myColor: Option[Player]) {
         if (depth == 0 || currentScore == Float.MinValue) {
           (firstMoveInPath, currentScore, depth)
         } else {
-          val validMoves = p.allValidMoves(b) filter (!hasExtraMove || _.moveType == MoveType.Attack)
+          val validMoves = if (hasExtraMove) p.allValidMoves(b, attackOnly = true) else p.allValidMoves(b)
           if (validMoves.isEmpty) {
             (firstMoveInPath, leastEvenScore(p), depth)
           } else {
@@ -127,7 +125,6 @@ class Bot(private var myColor: Option[Player]) {
     } catch {
       case _: InterruptedException =>
     }
-    // If it's a sure loss, make a move that doesn't kill ourselves
     move
   }
 }

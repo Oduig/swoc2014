@@ -3,12 +3,24 @@ package com.gjos.scala.swoc.util
 class Stopwatch(val outputEnabled: Boolean) {
   val t0 = System.currentTimeMillis
   private var previous = t0
+  //private var pauseTime = 0l
 
   def sinceStart = {
     val now = System.currentTimeMillis
     previous = now
     now - t0
   }
+
+//  private var paused = false
+//  def pause = if (!paused) {
+//    pauseTime = System.currentTimeMillis
+//    paused = true
+//  } else throw new Exception()
+//
+//  def resume = if (paused) {
+//    previous += System.currentTimeMillis - pauseTime
+//    paused = false
+//  } else throw new Exception()
 
   def sinceLast = {
     val now = System.currentTimeMillis
@@ -26,5 +38,6 @@ class Stopwatch(val outputEnabled: Boolean) {
 
 object Stopwatch {
   private lazy val default = new Stopwatch(false)
-  def apply() = default
+  private lazy val debug = new Stopwatch(true)
+  def apply(printEnabled: Boolean = false) = if (printEnabled) debug else default
 }

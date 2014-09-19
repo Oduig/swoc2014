@@ -2,10 +2,11 @@ package com.gjos.scala.swoc.protocol
 
 import scala.collection.mutable
 import com.gjos.scala.swoc.{Direction, Score}
+import com.gjos.scala.swoc.util.Stopwatch
 
 class Board(private val state: mutable.Buffer[mutable.Buffer[Field]] = Board.defaultState) {
 
-  def getField(location: BoardLocation): Field = getField(location.x, location.y)
+  def getField(location: (Int, Int)): Field = getField(location._1, location._2)
   def getField(x: Int, y: Int): Field = state(y)(x)
 
   def score(us: Player) = Score.score(this, us)
@@ -52,45 +53,8 @@ class Board(private val state: mutable.Buffer[mutable.Buffer[Field]] = Board.def
     newBoard
   }
 
-  def getPossibleToLocations(fromLocation: BoardLocation): List[BoardLocation] = {
-    val targets = Direction.allDirections.map(getFirstNonEmptyInDirection(fromLocation, _))
-
-    val validDirections = targets collect {
-      case Some(target) if isValidMove(fromLocation, target) => target
-    }
-    fromLocation :: validDirections
-  }
-
-  def getFirstNonEmptyInDirection(location: BoardLocation, direction: Direction): Option[BoardLocation] = {
-    var x: Int = location.x
-    var y: Int = location.y
-    do {
-      x += direction.x
-      y += direction.y
-    } while (BoardLocation.IsValid(x, y) && getField(x, y).player.isEmpty)
-
-    if (!BoardLocation.IsValid(x, y)) {
-      None
-    } else {
-      val newLocation: BoardLocation = new BoardLocation(x, y)
-      if (newLocation == location || getField(newLocation).player.isEmpty) {
-        None
-      } else {
-        Some(newLocation)
-      }
-    }
-  }
-
-  def isValidMove(from: BoardLocation, to: BoardLocation): Boolean = {
-    val fromOwner = getField(from).player
-    val toOwner = getField(to).player
-    val fromHeight: Int = getField(from).height
-    val toHeight: Int = getField(to).height
-    (fromOwner != None) && (toOwner != None) && ((fromOwner == toOwner) || fromHeight >= toHeight)
-  }
-
-  def setField(location: BoardLocation, field: Field) = {
-    state(location.y)(location.x) = field
+  def setField(location: (Int, Int), field: Field) = {
+    state(location._2)(location._1) = field
   }
 
   def totalCount(player: Player, stone: Stone): Int =
