@@ -22,15 +22,19 @@ trait Player {
           prevY = -1
         } else {
           val cur = board.getField(x, y)
-          if (cur.player.nonEmpty) {
+          if (cur != 0) {
             if (prevX >= 0) {
               val prev = board.getField(prevX, prevY)
-              if (prev.player.get == this && cur.player.get == this && !attackOnly) {
+              val prevPlayer = Field.player(prev).get
+              val curPlayer = Field.player(cur).get
+              val prevHeight = Field.height(prev)
+              val curHeight = Field.height(cur)
+              if (prevPlayer == this && curPlayer == this && !attackOnly) {
                 v = v :+ Move(MoveType.Strengthen, Some((x, y)), Some((prevX, prevY)))
                 v = v :+ Move(MoveType.Strengthen, Some((prevX, prevY)), Some((x, y)))
-              } else if (prev.player.get != this && cur.player.get == this && cur.height >= prev.height) {
+              } else if (prevPlayer != this && curPlayer == this && curHeight >= prevHeight) {
                 v = v :+ Move(MoveType.Attack, Some((x, y)), Some((prevX, prevY)))
-              } else if (prev.player.get == this && cur.player.get != this && prev.height >= cur.height) {
+              } else if (prevPlayer == this && curPlayer != this && prevHeight >= curHeight) {
                 v = v :+ Move(MoveType.Attack, Some((prevX, prevY)), Some((x, y)))
               }
             }

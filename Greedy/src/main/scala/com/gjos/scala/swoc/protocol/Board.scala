@@ -6,8 +6,8 @@ import com.gjos.scala.swoc.protocol.Field._
 
 class Board(private val state: mutable.Buffer[Byte] = Board.defaultState) {
 
-  def getField(location: (Byte, Byte)): Field = getField(location._1, location._2)
-  def getField(x: Byte, y: Byte): Field = state(y * Board.diameter + x)
+  def getField(location: (Byte, Byte)): Byte = getField(location._1, location._2)
+  def getField(x: Byte, y: Byte): Byte = state(y * Board.diameter + x)
 
   def score(us: Player) = Score.score(this, us)
   def stonesLeft(p: Player) = List(stoneValue(Stone.Pebble, p), stoneValue(Stone.Rock, p), stoneValue(Stone.Boulder, p))
@@ -24,11 +24,11 @@ class Board(private val state: mutable.Buffer[Byte] = Board.defaultState) {
       case MoveType.Attack =>
         val fromField = getField(move.from.get)
         newBoard.setField(move.from.get, Field.empty)
-        newBoard.setField(move.to.get, fromField.field)
+        newBoard.setField(move.to.get, fromField)
       case MoveType.Strengthen =>
         val fromField = getField(move.from.get)
         newBoard.setField(move.from.get, Field.empty)
-        newBoard.setField(move.to.get, Field.strengthened(fromField.field))
+        newBoard.setField(move.to.get, Field.strengthened(fromField))
     }
     newBoard
   }
@@ -38,8 +38,7 @@ class Board(private val state: mutable.Buffer[Byte] = Board.defaultState) {
   }
 
   def totalCount(player: Player, stone: Stone): Int = state count { field =>
-    val f: Field = field
-    f.player == Some(player) && f.stone == Some(stone)
+    Field.player(field) == Some(player) && Field.stone(field) == Some(stone)
   }
 
   def dump() {
@@ -47,7 +46,7 @@ class Board(private val state: mutable.Buffer[Byte] = Board.defaultState) {
     for (y <- Board.fullRange) {
       for (x <- Board.fullRange) {
         val c = if (BoardLocation.IsValid(x, y)) {
-          getField(x, y).player match {
+          Field.player(getField(x, y)) match {
             case Some(Player.Black) => 'B'
             case Some(Player.White) => 'W'
             case _ => '.'
@@ -58,7 +57,7 @@ class Board(private val state: mutable.Buffer[Byte] = Board.defaultState) {
       System.out.print("  ")
       for (x <- Board.fullRange) {
         val c = if (BoardLocation.IsValid(x, y)) {
-          getField(x, y).stone match {
+          Field.stone(getField(x, y)) match {
             case Some(Stone.Pebble) => 'a'
             case Some(Stone.Rock) => 'b'
             case Some(Stone.Boulder) => 'c'
@@ -69,7 +68,7 @@ class Board(private val state: mutable.Buffer[Byte] = Board.defaultState) {
       }
       System.out.print("  ")
       for (x <- Board.fullRange) {
-        val s = if (BoardLocation.IsValid(x, y)) f"${getField(x, y).height}%2d" else "  "
+        val s = if (BoardLocation.IsValid(x, y)) f"${Field.height(getField(x, y))}%2d" else "  "
         System.out.print(" " + s)
       }
       println()
@@ -88,9 +87,7 @@ class Board(private val state: mutable.Buffer[Byte] = Board.defaultState) {
 
   private val heightMultiplier = 1.1f
   private def stoneValue(s: Stone, p: Player): Float = (0f /: state) {
-    (acc, field) =>
-      val f: Field = field
-      acc + (if (f.player == Some(p) && f.stone == Some(s)) f.height * heightMultiplier else 0f)
+    (acc, field) => acc + (if (Field.player(field) == Some(p) && Field.stone(field) == Some(s)) Field.height(field) * heightMultiplier else 0f)
   }
 }
 

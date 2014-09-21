@@ -107,7 +107,7 @@ class Bot(private var myColor: Option[Player]) {
       }
     }
 
-    val time = new Stopwatch(true)
+    //val time = new Stopwatch(true)
     var depth = 1
     var move: Move = null
     var score: Float = 0
@@ -119,7 +119,7 @@ class Bot(private var myColor: Option[Player]) {
         val (m, s, _) = minimax(board, null, us, haveExtraMove, depth, Float.MinValue, Float.MaxValue)
         move = m
         score = s
-        time.tell(s"Explored game state with $depth move lookahead and found $m with score $s")
+        //time.tell(s"Explored game state with $depth move lookahead and found $m with score $s")
         depth += 1
       }
     } catch {

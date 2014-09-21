@@ -1,13 +1,9 @@
 package com.gjos.scala.swoc.protocol
 
-import scala.languageFeature.implicitConversions
-
 object Field {
-  implicit class Field(val field: Byte) extends AnyVal {
-    def player = if (field > 0) Some(Player.White) else if (field < 0) Some(Player.Black) else None
-    def stone = Stone.byValue((Math.abs(field) % 4).toByte)
-    def height = (Math.abs(field) / 4).toByte
-  }
+  def player(field: Byte) = if (field > 0) Some(Player.White) else if (field < 0) Some(Player.Black) else None
+  def stone(field: Byte) = Stone.byValue((Math.abs(field) % 4).toByte)
+  def height(field: Byte) = (Math.abs(field) / 4).toByte
 
   lazy val empty = encode(null, null, 0)
   lazy val blackPebble = encode(Player.Black, Stone.Pebble, 1)
