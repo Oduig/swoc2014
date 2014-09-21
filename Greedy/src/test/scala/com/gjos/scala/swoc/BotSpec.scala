@@ -45,5 +45,10 @@ class BotSpec extends WordSpec with Matchers {
         move should not be Move(MoveType.Attack, Some(BoardLocation fromLabel "H1"), Some(BoardLocation fromLabel "E1"))
       }
     }
+
+    "should not do things that are fucking stupid" in {
+      val move = new Bot(Some(us)).handleMove(moveRequest("fucking-stupid.txt"), singleMoveTurn = false)
+      move.moveType should not be (MoveType.Attack)
+    }
   }
 }

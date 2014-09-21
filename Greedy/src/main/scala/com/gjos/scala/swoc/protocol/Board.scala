@@ -12,6 +12,14 @@ class Board(private val state: mutable.Buffer[Byte] = Board.defaultState) {
   def score(us: Player) = Score.score(this, us)
   def stonesLeft(p: Player) = List(stoneValue(Stone.Pebble, p), stoneValue(Stone.Rock, p), stoneValue(Stone.Boulder, p))
 
+  private val heightMultiplier = 1.1f
+  private def stoneValue(s: Stone, p: Player): Float = (0f /: state) {
+    (acc, field) => acc + (if (Field.player(field) == Some(p) && Field.stone(field) == Some(s)) Field.height(field) * heightMultiplier else 0f)
+  }
+  def totalCount(player: Player, stone: Stone): Int = state count { field =>
+    Field.player(field) == Some(player) && Field.stone(field) == Some(stone)
+  }
+
   private def copy() = {
     val newState = for (field <- state) yield field
     new Board(newState)
@@ -35,10 +43,6 @@ class Board(private val state: mutable.Buffer[Byte] = Board.defaultState) {
 
   def setField(location: (Byte, Byte), field: Byte) = {
     state(location._2 * Board.diameter + location._1) = field
-  }
-
-  def totalCount(player: Player, stone: Stone): Int = state count { field =>
-    Field.player(field) == Some(player) && Field.stone(field) == Some(stone)
   }
 
   def dump() {
@@ -84,11 +88,6 @@ class Board(private val state: mutable.Buffer[Byte] = Board.defaultState) {
       + totalCount(Player.Black, Stone.Boulder) + " c")
   }
 
-
-  private val heightMultiplier = 1.1f
-  private def stoneValue(s: Stone, p: Player): Float = (0f /: state) {
-    (acc, field) => acc + (if (Field.player(field) == Some(p) && Field.stone(field) == Some(s)) Field.height(field) * heightMultiplier else 0f)
-  }
 }
 
 object Board {

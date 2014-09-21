@@ -13,9 +13,9 @@ object Field {
   lazy val whiteRock = encode(Player.White, Stone.Rock, 1)
   lazy val whiteBoulder = encode(Player.White, Stone.Boulder, 1)
 
-  def strengthened(current: Byte) = (current + 4).toByte
+  def strengthened(current: Byte) = ((if (current > 0) 4 else -4) + current).toByte
 
-  def encode(player: Player, stone: Stone, height: Byte): Byte = {
+  private def encode(player: Player, stone: Stone, height: Byte): Byte = {
     if (player == null && height == 0) 0
     else (player.value * (height * 4 + stone.value)).toByte
   }
