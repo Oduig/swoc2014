@@ -1,37 +1,26 @@
 package com.gjos.scala.swoc.protocol
 
-case class Field (player: Option[Player], stone: Option[Stone], height: Int) {
-  def code = (player, stone, height) match {
-    case (None, None, 0) => 0
-    case (Some(p), Some(s), h) if h > 0 => p.value * (h * 4 + s.value)
-  }
-
-  def higher = Field(player, stone, height + 1)
-}
+import scala.languageFeature.implicitConversions
 
 object Field {
-  val empty = new Field(None, None, 0)
-  val blackPebble = new Field(Some(Player.Black), Some(Stone.Pebble), 1)
-  val blackRock = new Field(Some(Player.Black), Some(Stone.Rock), 1)
-  val blackBoulder = new Field(Some(Player.Black), Some(Stone.Boulder), 1)
-  val whitePebble = new Field(Some(Player.White), Some(Stone.Pebble), 1)
-  val whiteRock = new Field(Some(Player.White), Some(Stone.Rock), 1)
-  val whiteBoulder = new Field(Some(Player.White), Some(Stone.Boulder), 1)
-
-  def getOwner(fieldCode: Int): Option[Player] = fieldCode match {
-    case x if x > 0 => Some(Player.White)
-    case x if x < 0 => Some(Player.Black)
-    case _ => None
+  implicit class Field(val field: Byte) extends AnyVal {
+    def player = if (field > 0) Some(Player.White) else if (field < 0) Some(Player.Black) else None
+    def stone = Stone.byValue((Math.abs(field) % 4).toByte)
+    def height = (Math.abs(field) / 4).toByte
   }
 
-  def getStone(fieldCode: Int): Option[Stone] = Math.abs(fieldCode) % 4 match {
-    case 0 => None
-    case 1 => Some(Stone.Pebble)
-    case 2 => Some(Stone.Rock)
-    case 3 => Some(Stone.Boulder)
+  lazy val empty = encode(null, null, 0)
+  lazy val blackPebble = encode(Player.Black, Stone.Pebble, 1)
+  lazy val blackRock = encode(Player.Black, Stone.Rock, 1)
+  lazy val blackBoulder = encode(Player.Black, Stone.Boulder, 1)
+  lazy val whitePebble = encode(Player.White, Stone.Pebble, 1)
+  lazy val whiteRock = encode(Player.White, Stone.Rock, 1)
+  lazy val whiteBoulder = encode(Player.White, Stone.Boulder, 1)
+
+  def strengthened(current: Byte) = (current + 4).toByte
+
+  def encode(player: Player, stone: Stone, height: Byte): Byte = {
+    if (player == null && height == 0) 0
+    else (player.value * (height * 4 + stone.value)).toByte
   }
-
-  def getHeight(fieldCode: Int) = Math.abs(fieldCode) / 4
-
-  def fromCode(code: Int): Field = Field(getOwner(code), getStone(code), getHeight(code))
 }

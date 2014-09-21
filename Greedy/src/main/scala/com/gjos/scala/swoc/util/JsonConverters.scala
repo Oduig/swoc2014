@@ -15,7 +15,7 @@ object JsonConverters {
     "Color": <PlayerColor>
   }*/
   def createInitiateRequest(jsonMessage: String): InitiateRequest = {
-    val playerNum: Int = parse(jsonMessage).getAs[String]("Color").toInt
+    val playerNum = parse(jsonMessage).getAs[String]("Color").toByte
     InitiateRequest(Player.byValue(playerNum).get)
   }
 
@@ -25,11 +25,11 @@ object JsonConverters {
   }*/
   def createMoveRequest(jsonMessage: String): MoveRequest = {
     val json = parse(jsonMessage)
-    val boardSetup: List[List[Int]] =
+    val boardSetup: List[List[Byte]] =
       for (row <- json.getAs[JSONObject]("Board").getList[JSONArray]("state"))
-      yield row.getList[Long]() map (_.toInt)
-    val allowedMoves: List[Int] = json.getList[String]("AllowedMoves") map (_.toInt)
-    MoveRequest(Board.fromInts(boardSetup), allowedMoves.toList map MoveType.byValue)
+      yield row.getList[Long]() map (_.toByte)
+    val allowedMoves: List[Byte] = json.getList[String]("AllowedMoves") map (_.toByte)
+    MoveRequest(Board.fromBytes(boardSetup), allowedMoves.toList map MoveType.byValue)
   }
 
   /**{
@@ -39,16 +39,16 @@ object JsonConverters {
   }*/
   def createProcessedMove(jsonMessage: String): ProcessedMove = {
     val json = parse(jsonMessage)
-    val playerNum = json.getAs[String]("Player").toInt
+    val playerNum = json.getAs[String]("Player").toByte
     val moveObject = json.getAs[JSONObject]("Move")
-    val moveType: Int = moveObject.getAs[String]("Type").toInt
+    val moveType = moveObject.getAs[String]("Type").toByte
     val fromLocation = Option(moveObject.getAs[Any]("From")) map {
-      case moveFrom: JSONObject => (moveFrom.getAs[Long]("X").toInt, moveFrom.getAs[Long]("Y").toInt)
+      case moveFrom: JSONObject => (moveFrom.getAs[Long]("X").toByte, moveFrom.getAs[Long]("Y").toByte)
     }
     val toLocation = Option(moveObject.getAs[Any]("To")) map {
-      case moveTo: JSONObject => (moveTo.getAs[Long]("X").toInt, moveTo.getAs[Long]("Y").toInt)
+      case moveTo: JSONObject => (moveTo.getAs[Long]("X").toByte, moveTo.getAs[Long]("Y").toByte)
     }
-    val winnerPlayerNum: Int = json.getAs[String]("Winner").toInt
+    val winnerPlayerNum = json.getAs[String]("Winner").toByte
     val move = Move(MoveType.byValue(moveType), fromLocation, toLocation)
     ProcessedMove(Player.byValue(playerNum).get, move, Player.byValue(winnerPlayerNum))
   }
@@ -59,7 +59,7 @@ object JsonConverters {
     "To": <BoardLocation>
   }*/
   def toJson(move: Move): String = {
-    def boardLocationToJson(obl: Option[(Int, Int)], key: String) = obl match {
+    def boardLocationToJson(obl: Option[(Byte, Byte)], key: String) = obl match {
       case Some((x, y)) => s""""$key": { "X": $x, "Y": $y }"""
       case None => ""
     }

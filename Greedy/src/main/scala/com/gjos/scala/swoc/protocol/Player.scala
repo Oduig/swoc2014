@@ -5,17 +5,17 @@ import scala.collection.mutable.ArrayBuffer
 import com.gjos.scala.swoc.Direction
 
 trait Player {
-  val value: Int
+  val value: Byte
   val opponent: Player
 
   def allValidMoves(board: Board, attackOnly: Boolean = false): Vector[Move] = {
     var v = Vector(Move(MoveType.Pass, None, None))
 
-    def discover(startX: Int, startY: Int, direction: Direction) {
+    def discover(startX: Byte, startY: Byte, direction: Direction) {
       var x = startX
       var y = startY
-      var prevX: Int = -1
-      var prevY: Int = -1
+      var prevX: Byte = -1
+      var prevY: Byte = -1
       while (x < 9 && y < 9) {
         if ((x == 4 && y == 4) || (x - y >= 5 && y - x >= 5)) {
           prevX = -1
@@ -38,31 +38,33 @@ trait Player {
             prevY = y
           }
         }
-        x += direction.x
-        y += direction.y
+        x = (x + direction.x).toByte
+        y = (y + direction.y).toByte
       }
     }
 
-    for (y <- 0 until 9) discover(0, y, Direction.NorthEast)
-    for (x <- 0 until 9) discover(x, 0, Direction.South)
-    for (y <- 0 until 5) discover(0, y, Direction.SouthEast)
-    for (x <- 0 until 5) discover(x, 0, Direction.SouthEast)
+    for (y <- Board.fullRange) discover(0, y, Direction.NorthEast)
+    for (x <- Board.fullRange) discover(x, 0, Direction.South)
+    for (y <- Board.halfRange) discover(0, y, Direction.SouthEast)
+    for (x <- Board.halfRange) discover(x, 0, Direction.SouthEast)
     v
   }
+
+
 }
 
 object Player {
   case object White extends Player {
-    val value = 1
+    val value: Byte = 1
     val opponent = Player.Black
   }
 
   case object Black extends Player {
-    val value = -1
+    val value: Byte = -1
     val opponent = Player.White
   }
 
-  def byValue(i: Int): Option[Player] = i match {
+  def byValue(i: Byte): Option[Player] = i match {
     case _ if i > 0 => Some(White)
     case _ if i < 0 => Some(Black)
     case _ => None
