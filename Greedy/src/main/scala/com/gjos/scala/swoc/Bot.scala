@@ -21,7 +21,7 @@ class Bot(private var myColor: Option[Player]) {
     //println(move)
   }
 
-  def handleMove(request: MoveRequest, singleMoveTurn: Boolean, runTime: Long = 1500): Move = request.allowedMoves match {
+  def handleMove(request: MoveRequest, singleMoveTurn: Boolean, runTime: Long = 1750): Move = request.allowedMoves match {
     case x :: Nil if x == MoveType.Attack => bestMove(request.board, !singleMoveTurn, runTime)
     case _ => bestMove(request.board, haveExtraMove = false, runTime)
   }
@@ -107,7 +107,7 @@ class Bot(private var myColor: Option[Player]) {
       }
     }
 
-    val time = Stopwatch()
+    val time = new Stopwatch(true)
     var depth = 1
     var move: Move = null
     var score: Float = 0
