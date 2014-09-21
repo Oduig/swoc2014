@@ -21,6 +21,12 @@ unmanagedJars in Compile <++= baseDirectory map { base =>
 javaOptions ++= Seq(
 )
 
+scalacOptions ++= Seq(
+  "-deprecation",
+  "-unchecked",
+  "-optimize"
+)
+
 fork in run := true
 
 connectInput in run := true
