@@ -17,17 +17,13 @@ class BoardSpec extends WordSpec with Matchers {
 
   "Board" should {
     "rate a situation correctly" in {
-      board.score(us) should be (218)
-      board.applyMove(badMove).score(us) should be (147)
+      val x0 = board.score(us)
+      val x1 = board.applyMove(badMove).score(us)
       val goodMove = Move(MoveType.Attack, Some(BoardLocation fromLabel "E4"), Some(BoardLocation fromLabel "D3"))
       val boardAfter = board.applyMove(goodMove)
-      boardAfter.score(us) should be (355)
-    }
-
-    "not make a move which results in a worse score" in {
-      val before = board.score(us)
-      val after = board.applyMove(badMove).score(us)
-      before should be >= after
+      val x2 = boardAfter.score(us)
+      x1 should be < x0
+      x2 should be > x0
     }
   }
 

@@ -57,12 +57,12 @@ class PlayerSpec extends WordSpec with Matchers {
       moves should contain (validMove0)
       moves should contain (validMove1)
       moves should contain (validMove2)
-      moves should not contain(emptyFromValid)
-      moves should not contain(emptyToValid)
+      moves should not contain emptyFromValid
+      moves should not contain emptyToValid
       moves should contain (reinforceValid)
       moves should contain (attackWeakerValid)
       moves should contain (attackEqualValid)
-      moves should not contain(attackStrongerValid)
+      moves should not contain attackStrongerValid
       moves should not contain invalidMove
     }
   }

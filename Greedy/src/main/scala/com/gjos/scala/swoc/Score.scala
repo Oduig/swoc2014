@@ -31,7 +31,6 @@ object Score {
    */
   def utility(b: Board, p: Player): Int = {
     val fields = b.iterator
-    val heightMultiplier = 11
     var pebbleValue = 0
     var rockValue = 0
     var boulderValue = 0
@@ -39,7 +38,7 @@ object Score {
       val field = fields.next()
       if (Field.player(field) == Some(p)) {
         val stone = Field.stone(field).get
-        val value = heightMultiplier * Field.height(field)
+        val value = Math.pow(Field.height(field) * 10, 1.15).toInt
         if (stone == Stone.Pebble) {
           pebbleValue += value
         } else if (stone == Stone.Rock) {
