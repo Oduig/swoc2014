@@ -16,7 +16,7 @@ object Field {
   def strengthened(current: Byte) = ((if (current > 0) 4 else -4) + current).toByte
 
   private def encode(player: Player, stone: Stone, height: Byte): Byte = {
-    if (player == null && height == 0) 0
+    if (player == null || stone == null || height == 0) 0
     else (player.value * (height * 4 + stone.value)).toByte
   }
 }

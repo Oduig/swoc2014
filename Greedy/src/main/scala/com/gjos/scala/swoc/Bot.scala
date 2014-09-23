@@ -29,16 +29,16 @@ class Bot(private var myColor: Option[Player]) {
   def bestMove(board: Board, haveExtraMove: Boolean, runTime: Long): Move = {
 
     var timedOut = false
-    def leastEvenScore(p: Player) = if (p == us) Float.MinValue else Float.MaxValue
-    def moreEven(p: Player)(x: Float, y: Float) = if (p == us) x > y else x < y
+    def leastEvenScore(p: Player) = if (p == us) Int.MinValue else Int.MaxValue
+    def moreEven(p: Player)(x: Int, y: Int) = if (p == us) x > y else x < y
 
-    def minimax(b: Board, firstMoveInPath: Move, p: Player, hasExtraMove: Boolean, depth: Int, alpha: Float, beta: Float): (Move, Float, Int) = {
+    def minimax(b: Board, firstMoveInPath: Move, p: Player, hasExtraMove: Boolean, depth: Int, alpha: Int, beta: Int): (Move, Int, Int) = {
       if (timedOut) {
         throw new InterruptedException("Minimax interrupted due to timeout.")
       } else {
         val currentScore = b.score(us)
         // Stop at max recursion depth or when we have lost. If we have won, it's already covered.
-        if (depth == 0 || currentScore == Float.MinValue) {
+        if (depth == 0 || currentScore == Int.MinValue) {
           (firstMoveInPath, currentScore, depth)
         } else {
           val validMoves = if (hasExtraMove) p.allValidMoves(b, attackOnly = true) else p.allValidMoves(b)
@@ -47,7 +47,7 @@ class Bot(private var myColor: Option[Player]) {
           } else {
             val nextPlayer = if (hasExtraMove) p else p.opponent
             val nextHasExtraMove = !hasExtraMove
-            val childScores = ArrayBuffer.empty[(Move, Float, Int)]
+            val childScores = ArrayBuffer.empty[(Move, Int, Int)]
             var i: Int = 0
             var newAlpha = alpha
             var newBeta = beta
@@ -88,7 +88,7 @@ class Bot(private var myColor: Option[Player]) {
                 evenestSoFar = thisone
                 deepestSoFar = childScores(i)._3
               } else if (thisone == evenestSoFar) {
-                if (thisone == Float.MinValue) { // This is to maximize the length of the game when we are losing for sure
+                if (thisone == Int.MinValue) { // This is to maximize the length of the game when we are losing for sure
                   if (childScores(i)._3 < deepestSoFar) {
                     deepestSoFar = childScores(i)._3
                     optimalMoveIndices = List(i)
@@ -110,13 +110,13 @@ class Bot(private var myColor: Option[Player]) {
     //val time = new Stopwatch(true)
     var depth = 1
     var move: Move = null
-    var score: Float = 0
+    var score: Int = 0
     Future(blocking(Thread sleep runTime)) onComplete (_ => timedOut = true)
     try {
       // We can stop if we find a game ender, and take any move.
       // Otherwise, stop on timeout.
-      while (score < Float.MaxValue && score > Float.MinValue) {
-        val (m, s, _) = minimax(board, null, us, haveExtraMove, depth, Float.MinValue, Float.MaxValue)
+      while (score < Int.MaxValue && score > Int.MinValue) {
+        val (m, s, _) = minimax(board, null, us, haveExtraMove, depth, Int.MinValue, Int.MaxValue)
         move = m
         score = s
         //time.tell(s"Explored game state with $depth move lookahead and found $m with score $s")
