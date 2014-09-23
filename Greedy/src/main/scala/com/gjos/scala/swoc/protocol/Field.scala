@@ -1,7 +1,7 @@
 package com.gjos.scala.swoc.protocol
 
 object Field {
-  def player(field: Int) = if (field > 0) Some(Player.White) else if (field < 0) Some(Player.Black) else None
+  def player(field: Int) = if (field > 0) Player.White else if (field < 0) Player.Black else null
   def stone(field: Int) = Stone.byValue(Math.abs(field) % 4)
   def height(field: Int) = Math.abs(field) / 4
 

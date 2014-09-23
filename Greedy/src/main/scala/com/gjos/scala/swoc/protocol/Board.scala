@@ -40,7 +40,7 @@ class Board(private val state: Array[Int] = Board.defaultState) {
 
 
   private def totalCount(player: Player, stone: Stone): Int = state count { field =>
-    Field.player(field) == Some(player) && Field.stone(field) == Some(stone)
+    Field.player(field) == player && Field.stone(field) == stone
   }
 
   def dump() {
@@ -49,8 +49,8 @@ class Board(private val state: Array[Int] = Board.defaultState) {
       for (x <- Board.fullRange) {
         val c = if (BoardLocation.IsValid(x, y)) {
           Field.player(getField(x, y)) match {
-            case Some(Player.Black) => 'B'
-            case Some(Player.White) => 'W'
+            case Player.Black => 'B'
+            case Player.White => 'W'
             case _ => '.'
           }
         } else ' '
@@ -60,9 +60,9 @@ class Board(private val state: Array[Int] = Board.defaultState) {
       for (x <- Board.fullRange) {
         val c = if (BoardLocation.IsValid(x, y)) {
           Field.stone(getField(x, y)) match {
-            case Some(Stone.Pebble) => 'a'
-            case Some(Stone.Rock) => 'b'
-            case Some(Stone.Boulder) => 'c'
+            case Stone.Pebble => 'a'
+            case Stone.Rock => 'b'
+            case Stone.Boulder => 'c'
             case _ => '.'
           }
         } else ' '

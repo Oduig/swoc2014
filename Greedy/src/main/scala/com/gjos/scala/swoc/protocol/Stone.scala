@@ -17,10 +17,5 @@ object Stone {
     val value: Int = 3
   }
 
-  def byValue(i: Int): Option[Stone] = i match {
-    case 0 => None
-    case 1 => Some(Pebble)
-    case 2 => Some(Rock)
-    case 3 => Some(Boulder)
-  }
+  def byValue(i: Int): Stone = if (i == 0) null else if (i == 1) Pebble else if (i == 2) Rock else Boulder
 }

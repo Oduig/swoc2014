@@ -25,8 +25,8 @@ trait Player {
           if (cur != 0) {
             if (prevX >= 0) {
               val prev = board.getField(prevX, prevY)
-              val prevPlayer = Field.player(prev).get
-              val curPlayer = Field.player(cur).get
+              val prevPlayer = Field.player(prev)
+              val curPlayer = Field.player(cur)
               val prevHeight = Field.height(prev)
               val curHeight = Field.height(cur)
               if (prevPlayer == this && curPlayer == this && !attackOnly) {

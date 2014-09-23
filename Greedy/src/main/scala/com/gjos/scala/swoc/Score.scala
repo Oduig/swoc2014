@@ -38,8 +38,8 @@ object Score {
     var boulderValue = 0
     while (fields.hasNext) {
       val field = fields.next()
-      if (Field.player(field) == Some(p)) {
-        val stone = Field.stone(field).get
+      if (Field.player(field) == p) {
+        val stone = Field.stone(field)
         val value = Math.pow(Field.height(field) * 10, 1.4).toInt
         if (stone == Stone.Pebble) {
           pebbleValue += value
