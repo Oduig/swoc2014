@@ -3,6 +3,7 @@ package com.gjos.scala.swoc.protocol
 import scala.collection.mutable
 import com.gjos.scala.swoc.Score
 import com.gjos.scala.swoc.protocol.Field._
+import java.util
 
 class Board(private val state: Array[Int] = Board.defaultState) {
 
@@ -11,6 +12,7 @@ class Board(private val state: Array[Int] = Board.defaultState) {
 
   def score(us: Player) = Score.score(this, us)
   def iterator = state.iterator
+  def myHashCode = util.Arrays.hashCode(state)
 
   private def copy() = {
     val newState = for (field <- state) yield field

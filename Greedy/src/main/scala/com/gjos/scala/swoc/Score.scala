@@ -1,6 +1,7 @@
 package com.gjos.scala.swoc
 
 import com.gjos.scala.swoc.protocol.{Field, Board, Stone, Player}
+import com.gjos.scala.swoc.util.ScoreCache
 
 object Score {
   /**
@@ -9,19 +10,27 @@ object Score {
    * where score is determined by how close we are to having a type of stones eliminated
    */
   def score(board: Board, us: Player): Int = {
-    val them = us.opponent
-
-    val myScore = utility(board, us)
-    val theirScore = utility(board, them)
-    //println(s"Me: $myScore, them: $theirScore")
-    //board.dump()
-
-    if (theirScore <= 0) { // If we can win this turn, the rest doesn't matter.
-      Int.MaxValue
-    } else if (myScore <= 0) { // If we made a losing move, it's bad. But i
-      Int.MinValue
+    if (ScoreCache.hasKey(board)) {
+      ScoreCache.get(board)
     } else {
-      myScore - theirScore
+      val them = us.opponent
+
+      val myScore = utility(board, us)
+      val theirScore = utility(board, them)
+      //println(s"Me: $myScore, them: $theirScore")
+      //board.dump()
+
+      val score = if (theirScore <= 0) {
+        // If we can win this turn, the rest doesn't matter.
+        Int.MaxValue
+      } else if (myScore <= 0) {
+        // If we made a losing move, it's bad. But i
+        Int.MinValue
+      } else {
+        myScore - theirScore
+      }
+      ScoreCache.add(board, score)
+      score
     }
   }
 
