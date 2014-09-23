@@ -49,7 +49,7 @@ object JsonConverters {
       case moveTo: JSONObject => (moveTo.getAs[Long]("X").toInt, moveTo.getAs[Long]("Y").toInt)
     }
     val winnerPlayerNum = json.getAs[String]("Winner").toInt
-    val move = Move(MoveType.byValue(moveType), fromLocation, toLocation)
+    val move = Move(MoveType.byValue(moveType), fromLocation getOrElse null, toLocation getOrElse null)
     ProcessedMove(Player.byValue(playerNum).get, move, Player.byValue(winnerPlayerNum))
   }
 
@@ -59,9 +59,8 @@ object JsonConverters {
     "To": <BoardLocation>
   }*/
   def toJson(move: Move): String = {
-    def boardLocationToJson(obl: Option[(Int, Int)], key: String) = obl match {
-      case Some((x, y)) => s""""$key": { "X": $x, "Y": $y }"""
-      case None => ""
+    def boardLocationToJson(obl: (Int, Int), key: String) = obl match {
+      case (x, y) => s""""$key": { "X": $x, "Y": $y }"""
     }
 
     List(

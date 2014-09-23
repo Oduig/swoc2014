@@ -18,7 +18,7 @@ class BoardSpec extends WordSpec with Matchers {
     "rate a situation correctly" in {
       val board = loadBoard("reinforce-weaker.txt")
       val x0 = board.score(us)
-      val goodMove = Move(MoveType.Attack, Some(BoardLocation fromLabel "E4"), Some(BoardLocation fromLabel "D3"))
+      val goodMove = Move(MoveType.Attack, BoardLocation fromLabel "E4", BoardLocation fromLabel "D3")
       val badMove = Move(MoveType.Attack, (0, 3), (4, 3))
       val x1 = board.applyMove(badMove).score(us)
       val x2 = board.applyMove(goodMove).score(us)

@@ -9,7 +9,7 @@ trait Player {
   val opponent: Player
 
   def allValidMoves(board: Board, attackOnly: Boolean = false): Vector[Move] = {
-    var v = if (attackOnly) Vector.empty[Move] else Vector(Move(MoveType.Pass, None, None))
+    var v = if (attackOnly) Vector.empty[Move] else Vector(Move(MoveType.Pass, null, null))
 
     def discover(startX: Int, startY: Int, direction: Direction) {
       var x = startX
@@ -30,12 +30,12 @@ trait Player {
               val prevHeight = Field.height(prev)
               val curHeight = Field.height(cur)
               if (prevPlayer == this && curPlayer == this && !attackOnly) {
-                v = v :+ Move(MoveType.Strengthen, Some((x, y)), Some((prevX, prevY)))
-                v = v :+ Move(MoveType.Strengthen, Some((prevX, prevY)), Some((x, y)))
+                v = v :+ Move(MoveType.Strengthen, (x, y), (prevX, prevY))
+                v = v :+ Move(MoveType.Strengthen, (prevX, prevY), (x, y))
               } else if (prevPlayer != this && curPlayer == this && curHeight >= prevHeight) {
-                v = v :+ Move(MoveType.Attack, Some((x, y)), Some((prevX, prevY)))
+                v = v :+ Move(MoveType.Attack, (x, y), (prevX, prevY))
               } else if (prevPlayer == this && curPlayer != this && prevHeight >= curHeight) {
-                v = v :+ Move(MoveType.Attack, Some((prevX, prevY)), Some((x, y)))
+                v = v :+ Move(MoveType.Attack, (prevX, prevY), (x, y))
               }
             }
             prevX = x

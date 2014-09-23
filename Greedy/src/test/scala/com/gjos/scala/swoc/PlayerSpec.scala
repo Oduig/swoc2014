@@ -34,24 +34,24 @@ class PlayerSpec extends WordSpec with Matchers {
         "H5" -> "I4"
       )
 
-      validMoves should contain (Move(MoveType.Pass, None, None))
+      validMoves should contain (Move(MoveType.Pass, null, null))
       expectedAttacks foreach { case (src, dst) =>
-        validMoves should contain (Move(MoveType.Attack, Some(BoardLocation fromLabel src), Some(BoardLocation fromLabel dst)))
+        validMoves should contain (Move(MoveType.Attack, BoardLocation fromLabel src, BoardLocation fromLabel dst))
       }
     }
 
     "get valid moves in any situation" in {
       val e4 = BoardLocation fromLabel "E4"
-      val validMove0 = Move(MoveType.Pass, None, None)
-      val emptyFromValid = Move(MoveType.Attack, Some((0, 0)), Some((2, 0)))
-      val emptyToValid = Move(MoveType.Strengthen, Some((2, 0)), Some((0, 0)))
-      val reinforceValid = Move(MoveType.Strengthen, Some((0, 3)), Some((4, 3)))
-      val attackWeakerValid = Move(MoveType.Attack, Some((4, 3)), Some((3, 2)))
-      val attackEqualValid = Move(MoveType.Attack, Some((2, 2)), Some((3, 2)))
-      val attackStrongerValid = Move(MoveType.Attack, Some((2, 2)), Some((2, 0)))
-      val validMove1 = Move(MoveType.Attack, Some(e4), Some(BoardLocation fromLabel "D3"))
-      val validMove2 = Move(MoveType.Strengthen, Some(BoardLocation fromLabel "A4"), Some(e4))
-      val invalidMove = Move(MoveType.Strengthen, Some(e4), Some(BoardLocation fromLabel "E2"))
+      val validMove0 = Move(MoveType.Pass, null, null)
+      val emptyFromValid = Move(MoveType.Attack, (0, 0), (2, 0))
+      val emptyToValid = Move(MoveType.Strengthen, (2, 0), (0, 0))
+      val reinforceValid = Move(MoveType.Strengthen, (0, 3), (4, 3))
+      val attackWeakerValid = Move(MoveType.Attack, (4, 3), (3, 2))
+      val attackEqualValid = Move(MoveType.Attack, (2, 2), (3, 2))
+      val attackStrongerValid = Move(MoveType.Attack, (2, 2), (2, 0))
+      val validMove1 = Move(MoveType.Attack, e4, BoardLocation fromLabel "D3")
+      val validMove2 = Move(MoveType.Strengthen, BoardLocation fromLabel "A4", e4)
+      val invalidMove = Move(MoveType.Strengthen, e4, BoardLocation fromLabel "E2")
 
       val moves = us.allValidMoves(board).toSet
       moves should contain (validMove0)

@@ -22,14 +22,14 @@ class Board(private val state: Array[Int] = Board.defaultState) {
     move.moveType match {
       case MoveType.Pass => newBoard
       case MoveType.Attack =>
-        val fromField = getField(move.from.get)
-        newBoard.setField(move.from.get, Field.empty)
-        newBoard.setField(move.to.get, fromField)
+        val fromField = getField(move.from)
+        newBoard.setField(move.from, Field.empty)
+        newBoard.setField(move.to, fromField)
       case MoveType.Strengthen =>
-        val fromField = getField(move.from.get)
-        val toField = getField(move.to.get)
-        newBoard.setField(move.from.get, Field.empty)
-        newBoard.setField(move.to.get, Field.strengthened(fromField, toField))
+        val fromField = getField(move.from)
+        val toField = getField(move.to)
+        newBoard.setField(move.from, Field.empty)
+        newBoard.setField(move.to, Field.strengthened(fromField, toField))
     }
     newBoard
   }
