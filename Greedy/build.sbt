@@ -27,6 +27,6 @@ scalacOptions ++= Seq(
   "-optimize"
 )
 
-fork in run := true
+fork := true
 
-connectInput in run := true
+connectInput := true

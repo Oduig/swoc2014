@@ -52,6 +52,7 @@ class Bot(private var myColor: Option[Player]) {
             var newBeta = beta
             var cutoff = false
             while (i < validMoves.size && !cutoff) {
+              if (timedOut) throw new InterruptedException("Minimax interrupted due to timeout.")
               val validMove = validMoves(i)
               val outcome = minimax(
                 b applyMove validMove,
@@ -81,6 +82,7 @@ class Bot(private var myColor: Option[Player]) {
             var optimalMoveIndices = List[Int]()
             i = 0
             while (i < childScores.size) {
+              if (timedOut) throw new InterruptedException("Minimax interrupted due to timeout.")
               val thisone = childScores(i)._2
               if (compare(thisone, evenestSoFar)) {
                 optimalMoveIndices = List[Int](i)
@@ -113,7 +115,7 @@ class Bot(private var myColor: Option[Player]) {
     try {
       // We can stop if we find a game ender, and take any move.
       // Otherwise, stop on timeout.
-      while (score < Int.MaxValue && score > Int.MinValue) {
+      while (score < Int.MaxValue && score > Int.MinValue && !timedOut) {
         val (m, s, _) = minimax(board, null, us, haveExtraMove, depth, Int.MinValue, Int.MaxValue)
         move = m
         score = s
