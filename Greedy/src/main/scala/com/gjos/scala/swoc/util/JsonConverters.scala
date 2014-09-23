@@ -59,9 +59,8 @@ object JsonConverters {
     "To": <BoardLocation>
   }*/
   def toJson(move: Move): String = {
-    def boardLocationToJson(obl: (Int, Int), key: String) = obl match {
-      case (x, y) => s""""$key": { "X": $x, "Y": $y }"""
-    }
+    def boardLocationToJson(bl: (Int, Int), key: String) =
+      if (bl != null) s""""$key": { "X": ${bl._1}, "Y": ${bl._2} }""" else ""
 
     List(
       s""""Type": ${move.moveType.value}""",
