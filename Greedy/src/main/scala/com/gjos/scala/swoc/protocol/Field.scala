@@ -13,7 +13,8 @@ object Field {
   lazy val whiteRock = encode(Player.White, Stone.Rock, 1)
   lazy val whiteBoulder = encode(Player.White, Stone.Boulder, 1)
 
-  def strengthened(current: Int) = (if (current > 0) 4 else -4) + current
+  // Just keep the sign and multiple of 4 of the old stone, and add it to the new one
+  def strengthened(source: Int, target: Int) = (target / 4 * 4) + source
 
   private def encode(player: Player, stone: Stone, height: Int): Int = {
     if (player == null || stone == null || height == 0) 0

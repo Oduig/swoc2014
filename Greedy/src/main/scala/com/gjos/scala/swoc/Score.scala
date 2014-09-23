@@ -13,6 +13,8 @@ object Score {
 
     val myScore = utility(board, us)
     val theirScore = utility(board, them)
+    //println(s"Me: $myScore, them: $theirScore")
+    //board.dump()
 
     if (theirScore <= 0) { // If we can win this turn, the rest doesn't matter.
       Int.MaxValue
@@ -38,7 +40,7 @@ object Score {
       val field = fields.next()
       if (Field.player(field) == Some(p)) {
         val stone = Field.stone(field).get
-        val value = Math.pow(Field.height(field) * 10, 1.15).toInt
+        val value = Math.pow(Field.height(field) * 10, 1.4).toInt
         if (stone == Stone.Pebble) {
           pebbleValue += value
         } else if (stone == Stone.Rock) {
@@ -49,7 +51,8 @@ object Score {
       }
     }
 
-    val minScore = Math.min(boulderValue, Math.min(rockValue, pebbleValue))
+    //println(s"Pebble: $pebbleValue, Rock: $rockValue, Boulder: $boulderValue")
+    val minScore = Math.min(pebbleValue, Math.min(rockValue, boulderValue))
     if (minScore <= 0) Int.MinValue
     else (100 * (Math.sqrt(pebbleValue) + Math.sqrt(rockValue) + Math.sqrt(boulderValue))).toInt
   }

@@ -27,8 +27,9 @@ class Board(private val state: Array[Int] = Board.defaultState) {
         newBoard.setField(move.to.get, fromField)
       case MoveType.Strengthen =>
         val fromField = getField(move.from.get)
+        val toField = getField(move.to.get)
         newBoard.setField(move.from.get, Field.empty)
-        newBoard.setField(move.to.get, Field.strengthened(fromField))
+        newBoard.setField(move.to.get, Field.strengthened(fromField, toField))
     }
     newBoard
   }
@@ -43,7 +44,7 @@ class Board(private val state: Array[Int] = Board.defaultState) {
   }
 
   def dump() {
-    System.out.print("-- owners --------  -- stones --------  -- heights ----------------")
+    System.out.println("-- owners --------  -- stones --------  -- heights ----------------")
     for (y <- Board.fullRange) {
       for (x <- Board.fullRange) {
         val c = if (BoardLocation.IsValid(x, y)) {
@@ -112,5 +113,5 @@ object Board {
   private val diameter = 9
   private val radius = 5
   val halfRange = List.tabulate(radius)(identity)
-  val fullRange: List[Int] = halfRange ++ List.tabulate(radius)(_ + radius)
+  val fullRange = List.tabulate(diameter)(identity)
 }

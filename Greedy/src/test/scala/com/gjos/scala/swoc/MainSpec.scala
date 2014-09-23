@@ -5,6 +5,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import com.gjos.scala.swoc.util.Resource
+import com.gjos.scala.swoc.protocol.{Player, BoardLocation, MoveType, Move}
 
 class MainSpec extends WordSpec with Matchers {
 

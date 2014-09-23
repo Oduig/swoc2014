@@ -3,7 +3,7 @@ package com.gjos.scala.swoc
 import java.io._
 import scala.annotation.tailrec
 
-class IOManager(val inReader: BufferedReader, val outWriter: BufferedWriter) extends AutoCloseable {
+class IOManager(val inReader: BufferedReader, val outWriter: BufferedWriter, val debugMode: Boolean = false) extends AutoCloseable {
 
   val newline = System.lineSeparator()
 
@@ -39,6 +39,6 @@ object IOManager {
     val output = new OutputStreamWriter(baos)
     val bufferedIn = new BufferedReader(input)
     val bufferedOut = new BufferedWriter(output)
-    (new IOManager(bufferedIn, bufferedOut), baos.toString)
+    (new IOManager(bufferedIn, bufferedOut, debugMode = true), baos.toString)
   }
 }

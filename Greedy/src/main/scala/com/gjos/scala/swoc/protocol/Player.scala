@@ -9,7 +9,7 @@ trait Player {
   val opponent: Player
 
   def allValidMoves(board: Board, attackOnly: Boolean = false): Vector[Move] = {
-    var v = Vector(Move(MoveType.Pass, None, None))
+    var v = if (attackOnly) Vector.empty[Move] else Vector(Move(MoveType.Pass, None, None))
 
     def discover(startX: Int, startY: Int, direction: Direction) {
       var x = startX
@@ -50,7 +50,7 @@ trait Player {
     for (y <- Board.fullRange) discover(0, y, Direction.NorthEast)
     for (x <- Board.fullRange) discover(x, 0, Direction.South)
     for (y <- Board.halfRange) discover(0, y, Direction.SouthEast)
-    for (x <- Board.halfRange) discover(x, 0, Direction.SouthEast)
+    for (x <- Board.halfRange if x > 0) discover(x, 0, Direction.SouthEast)
     v
   }
 

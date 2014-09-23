@@ -1,5 +1,7 @@
 package com.gjos.scala.swoc.util
 
+import com.gjos.scala.swoc.IOManager
+
 class Stopwatch(val outputEnabled: Boolean) {
   val t0 = System.currentTimeMillis
   private var previous = t0
@@ -37,7 +39,11 @@ class Stopwatch(val outputEnabled: Boolean) {
 }
 
 object Stopwatch {
-  private lazy val default = new Stopwatch(false)
-  private lazy val debug = new Stopwatch(true)
-  def apply(printEnabled: Boolean = false) = if (printEnabled) debug else default
+  private var actual: Stopwatch = null
+
+  def init(ioManager: IOManager) {
+    actual = new Stopwatch(ioManager.debugMode)
+  }
+
+  def apply() = actual
 }

@@ -1,13 +1,17 @@
 package com.gjos.scala.swoc
 
-import com.gjos.scala.swoc.protocol.{ProcessedMove, Move, MoveRequest, Player}
-import com.gjos.scala.swoc.util.JsonConverters
+import com.gjos.scala.swoc.protocol._
+import com.gjos.scala.swoc.util.{Stopwatch, JsonConverters}
+import com.gjos.scala.swoc.protocol.MoveRequest
+import com.gjos.scala.swoc.protocol.ProcessedMove
+import scala.Some
 
 class Engine(private val bot: Bot, private val ioManager: IOManager) {
 
   private var botColor: Option[Player] = None
 
   def run() {
+    Stopwatch.init(ioManager)
     doInitiateRequest()
     var winner = doFirstRound()
     while (winner == None) {
@@ -39,7 +43,12 @@ class Engine(private val bot: Bot, private val ioManager: IOManager) {
   private def handleMoveRequest(singleMoveTurn: Boolean = false) {
     val moveRequest: MoveRequest = JsonConverters.createMoveRequest(ioManager.readLine())
     val move = bot.handleMove(moveRequest, singleMoveTurn)
-    ioManager.writeLine(JsonConverters.toJson(move))
+    val out = if (move == null) {
+      "If I die, what's the point?"
+    } else {
+      JsonConverters.toJson(move)
+    }
+    ioManager.writeLine(out)
   }
 
   private def handleProcessedMove(): Option[Player] = {
