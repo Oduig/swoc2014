@@ -1,9 +1,9 @@
 package com.gjos.scala.swoc.protocol
 
 object Field {
-  def player(field: Byte) = if (field > 0) Some(Player.White) else if (field < 0) Some(Player.Black) else None
-  def stone(field: Byte) = Stone.byValue((Math.abs(field) % 4).toByte)
-  def height(field: Byte) = (Math.abs(field) / 4).toByte
+  def player(field: Int) = if (field > 0) Some(Player.White) else if (field < 0) Some(Player.Black) else None
+  def stone(field: Int) = Stone.byValue(Math.abs(field) % 4)
+  def height(field: Int) = Math.abs(field) / 4
 
   lazy val empty = encode(null, null, 0)
   lazy val blackPebble = encode(Player.Black, Stone.Pebble, 1)
@@ -13,10 +13,10 @@ object Field {
   lazy val whiteRock = encode(Player.White, Stone.Rock, 1)
   lazy val whiteBoulder = encode(Player.White, Stone.Boulder, 1)
 
-  def strengthened(current: Byte) = ((if (current > 0) 4 else -4) + current).toByte
+  def strengthened(current: Int) = (if (current > 0) 4 else -4) + current
 
-  private def encode(player: Player, stone: Stone, height: Byte): Byte = {
+  private def encode(player: Player, stone: Stone, height: Int): Int = {
     if (player == null || stone == null || height == 0) 0
-    else (player.value * (height * 4 + stone.value)).toByte
+    else player.value * (height * 4 + stone.value)
   }
 }

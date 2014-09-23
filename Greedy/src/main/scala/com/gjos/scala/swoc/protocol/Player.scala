@@ -5,17 +5,17 @@ import scala.collection.mutable.ArrayBuffer
 import com.gjos.scala.swoc.Direction
 
 trait Player {
-  val value: Byte
+  val value: Int
   val opponent: Player
 
   def allValidMoves(board: Board, attackOnly: Boolean = false): Vector[Move] = {
     var v = Vector(Move(MoveType.Pass, None, None))
 
-    def discover(startX: Byte, startY: Byte, direction: Direction) {
+    def discover(startX: Int, startY: Int, direction: Direction) {
       var x = startX
       var y = startY
-      var prevX: Byte = -1
-      var prevY: Byte = -1
+      var prevX = -1
+      var prevY = -1
       while (x < 9 && y < 9) {
         if ((x == 4 && y == 4) || (x - y >= 5 && y - x >= 5)) {
           prevX = -1
@@ -42,8 +42,8 @@ trait Player {
             prevY = y
           }
         }
-        x = (x + direction.x).toByte
-        y = (y + direction.y).toByte
+        x = x + direction.x
+        y = y + direction.y
       }
     }
 
@@ -59,16 +59,16 @@ trait Player {
 
 object Player {
   case object White extends Player {
-    val value: Byte = 1
+    val value: Int = 1
     val opponent = Player.Black
   }
 
   case object Black extends Player {
-    val value: Byte = -1
+    val value: Int = -1
     val opponent = Player.White
   }
 
-  def byValue(i: Byte): Option[Player] = i match {
+  def byValue(i: Int): Option[Player] = i match {
     case _ if i > 0 => Some(White)
     case _ if i < 0 => Some(Black)
     case _ => None

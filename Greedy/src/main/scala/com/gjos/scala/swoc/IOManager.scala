@@ -2,7 +2,6 @@ package com.gjos.scala.swoc
 
 import java.io._
 import scala.annotation.tailrec
-import com.gjos.scala.swoc.util.Stopwatch
 
 class IOManager(val inReader: BufferedReader, val outWriter: BufferedWriter) extends AutoCloseable {
 

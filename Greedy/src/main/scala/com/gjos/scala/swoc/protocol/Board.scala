@@ -4,10 +4,10 @@ import scala.collection.mutable
 import com.gjos.scala.swoc.Score
 import com.gjos.scala.swoc.protocol.Field._
 
-class Board(private val state: Array[Byte] = Board.defaultState) {
+class Board(private val state: Array[Int] = Board.defaultState) {
 
-  def getField(location: (Byte, Byte)): Byte = getField(location._1, location._2)
-  def getField(x: Byte, y: Byte): Byte = state(y * Board.diameter + x)
+  def getField(location: (Int, Int)): Int = getField(location._1, location._2)
+  def getField(x: Int, y: Int): Int = state(y * Board.diameter + x)
 
   def score(us: Player) = Score.score(this, us)
   def iterator = state.iterator
@@ -33,7 +33,7 @@ class Board(private val state: Array[Byte] = Board.defaultState) {
     newBoard
   }
 
-  def setField(location: (Byte, Byte), field: Byte) = {
+  def setField(location: (Int, Int), field: Int) = {
     state(location._2 * Board.diameter + location._1) = field
   }
 
@@ -101,7 +101,7 @@ object Board {
     empty, empty, empty, empty, whitePebble, blackPebble, blackPebble, blackPebble, blackPebble
   )
 
-  def fromBytes(_state: Iterable[Iterable[Byte]]) = {
+  def fromInts(_state: Iterable[Iterable[Int]]) = {
     val state = for {
       row <- _state
       field <- row
@@ -109,8 +109,8 @@ object Board {
     new Board(state.toArray)
   }
 
-  private val diameter: Byte = 9
-  private val radius: Byte = 5
-  val halfRange = List.tabulate(radius)(_.toByte)
-  val fullRange: List[Byte] = halfRange ++ List.tabulate(radius)(index => (index + radius).toByte)
+  private val diameter = 9
+  private val radius = 5
+  val halfRange = List.tabulate(radius)(identity)
+  val fullRange: List[Int] = halfRange ++ List.tabulate(radius)(_ + radius)
 }
