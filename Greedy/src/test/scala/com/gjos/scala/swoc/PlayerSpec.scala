@@ -1,7 +1,7 @@
 package com.gjos.scala.swoc
 
 import scala.io.Source
-import com.gjos.scala.swoc.util.{Stopwatch, JsonConverters, Resource}
+import com.gjos.scala.swoc.util.{JsonConverters, Resource}
 import com.gjos.scala.swoc.protocol._
 import org.scalatest.{WordSpec, Matchers}
 import scala.Some

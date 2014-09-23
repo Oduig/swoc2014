@@ -3,7 +3,6 @@ package com.gjos.scala.swoc
 import java.util.Random
 import com.gjos.scala.swoc.protocol._
 import com.gjos.scala.swoc.protocol.InitiateRequest
-import com.gjos.scala.swoc.util.Stopwatch
 import scala.concurrent.blocking
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -118,7 +117,7 @@ class Bot(private var myColor: Option[Player]) {
         val (m, s, _) = minimax(board, null, us, haveExtraMove, depth, Int.MinValue, Int.MaxValue)
         move = m
         score = s
-        Stopwatch().tell(s"Explored game state with $depth move lookahead and found $m with score $s")
+        //com.gjos.scala.swoc.util.Stopwatch().tell(s"Explored game state with $depth move lookahead and found $m with score $s")
         depth += 1
       }
     } catch {
