@@ -62,7 +62,8 @@ object Score {
 
     //println(s"Pebble: $pebbleValue, Rock: $rockValue, Boulder: $boulderValue")
     val minScore = Math.min(pebbleValue, Math.min(rockValue, boulderValue))
+    val totalScore = pebbleValue + rockValue + boulderValue
     if (minScore <= 0) Int.MinValue
-    else (100 * (Math.pow(pebbleValue, 0.5) + Math.pow(rockValue, 0.5) + Math.pow(boulderValue, 0.5))).toInt
+    else minScore * 10 + totalScore
   }
 }
