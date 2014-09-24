@@ -32,74 +32,78 @@ class Bot(private var myColor: Option[Player]) {
     def moreEven(p: Player)(x: Int, y: Int) = if (p == us) x > y else x < y
 
     def minimax(b: Board, firstMoveInPath: Move, p: Player, hasExtraMove: Boolean, depth: Int, alpha: Int, beta: Int): (Move, Int, Int) = {
-      if (timedOut) throw new InterruptedException("Minimax interrupted due to timeout.")
-      val currentScore = b.score(us)
-      // Stop at max recursion depth or when we have lost. If we have won, it's already covered.
-      if (depth == 0 || currentScore == Int.MinValue) {
-        (firstMoveInPath, currentScore, depth)
+      if (timedOut) {
+        throw new InterruptedException("Minimax interrupted due to timeout.")
       } else {
-        val validMoves = if (hasExtraMove) p.allValidMoves(b, attackOnly = true) else p.allValidMoves(b)
-        if (validMoves.isEmpty) {
-          (firstMoveInPath, leastEvenScore(p), depth)
+        val currentScore = b.score(us)
+        // Stop at max recursion depth or when we have lost. If we have won, it's already covered.
+        if (depth == 0 || currentScore == Int.MinValue) {
+          (firstMoveInPath, currentScore, depth)
         } else {
-          val nextPlayer = if (hasExtraMove) p else p.opponent
-          val nextHasExtraMove = !hasExtraMove
-          val childScores = ArrayBuffer.empty[(Move, Int, Int)]
-          var i: Int = 0
-          var newAlpha = alpha
-          var newBeta = beta
-          var cutoff = false
-          while (i < validMoves.size && !cutoff) {
-            val validMove = validMoves(i)
-            val outcome = minimax(
-              b applyMove validMove,
-              if (firstMoveInPath == null) validMove else firstMoveInPath,
-              nextPlayer,
-              nextHasExtraMove,
-              depth - 1,
-              newAlpha,
-              newBeta
-            )
-            if (p == us) {
-              newAlpha = Math.max(alpha, outcome._2)
-            } else {
-              newBeta = Math.min(beta, outcome._2)
-            }
-            if (newBeta < newAlpha) {
-              cutoff = true
-            }
-            childScores += outcome
-            i += 1
-          }
-          //println(childScores)
-          // extra special bonus extension: don't take the first optimal move, take a random optimal move
-          val compare = moreEven(p) _
-          var evenestSoFar = leastEvenScore(p)
-          var deepestSoFar: Int = depth
-          var optimalMoveIndices = List[Int]()
-          i = 0
-          while (i < childScores.size) {
-            if (timedOut) throw new InterruptedException("Minimax interrupted due to timeout.")
-            val thisone = childScores(i)._2
-            if (compare(thisone, evenestSoFar)) {
-              optimalMoveIndices = List[Int](i)
-              evenestSoFar = thisone
-              deepestSoFar = childScores(i)._3
-            } else if (thisone == evenestSoFar) {
-              if (thisone == Int.MinValue) { // This is to maximize the length of the game when we are losing for sure
-                if (childScores(i)._3 < deepestSoFar) {
-                  deepestSoFar = childScores(i)._3
-                  optimalMoveIndices = List(i)
-                } else {}
+          val validMoves = if (hasExtraMove) p.allValidMoves(b, attackOnly = true) else p.allValidMoves(b)
+          if (validMoves.isEmpty) {
+            (firstMoveInPath, leastEvenScore(p), depth)
+          } else {
+            val nextPlayer = if (hasExtraMove) p else p.opponent
+            val nextHasExtraMove = !hasExtraMove
+            val childScores = ArrayBuffer.empty[(Move, Int, Int)]
+            var i: Int = 0
+            var newAlpha = alpha
+            var newBeta = beta
+            var cutoff = false
+            while (i < validMoves.size && !cutoff) {
+              if (timedOut) throw new InterruptedException("Minimax interrupted due to timeout.")
+              val validMove = validMoves(i)
+              val outcome = minimax(
+                b applyMove validMove,
+                if (firstMoveInPath == null) validMove else firstMoveInPath,
+                nextPlayer,
+                nextHasExtraMove,
+                depth - 1,
+                newAlpha,
+                newBeta
+              )
+              if (p == us) {
+                newAlpha = Math.max(alpha, outcome._2)
               } else {
-                optimalMoveIndices = i :: optimalMoveIndices
+                newBeta = Math.min(beta, outcome._2)
               }
+              if (newBeta < newAlpha) {
+                cutoff = true
+              }
+              childScores += outcome
+              i += 1
             }
-            i += 1
+            //println(childScores)
+            // extra special bonus extension: don't take the first optimal move, take a random optimal move
+            val compare = moreEven(p) _
+            var evenestSoFar = leastEvenScore(p)
+            var deepestSoFar: Int = depth
+            var optimalMoveIndices = List[Int]()
+            i = 0
+            while (i < childScores.size) {
+              if (timedOut) throw new InterruptedException("Minimax interrupted due to timeout.")
+              val thisone = childScores(i)._2
+              if (compare(thisone, evenestSoFar)) {
+                optimalMoveIndices = List[Int](i)
+                evenestSoFar = thisone
+                deepestSoFar = childScores(i)._3
+              } else if (thisone == evenestSoFar) {
+                if (thisone == Int.MinValue) { // This is to maximize the length of the game when we are losing for sure
+                  if (childScores(i)._3 < deepestSoFar) {
+                    deepestSoFar = childScores(i)._3
+                    optimalMoveIndices = List(i)
+                  } else {}
+                } else {
+                  optimalMoveIndices = i :: optimalMoveIndices
+                }
+              }
+              i += 1
+            }
+            val best = childScores(optimalMoveIndices.toVector(random.nextInt(optimalMoveIndices.size)))
+            //println(best)
+            best
           }
-          val best = childScores(optimalMoveIndices.toVector(random.nextInt(optimalMoveIndices.size)))
-          //println(best)
-          best
         }
       }
     }
