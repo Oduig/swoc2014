@@ -128,6 +128,8 @@ class Bot(private var myColor: Option[Player], private val verbose: Boolean = fa
     } catch {
       case _: InterruptedException =>
     }
+    if (score == Int.MinValue) System.err.println("Winter is coming.")
+    if (score == Int.MaxValue) System.err.println("We do not sow.")
     move
   }
 }
