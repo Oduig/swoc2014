@@ -21,17 +21,17 @@ class Bot(private var myColor: Option[Player]) {
   }
 
   def handleMove(request: MoveRequest, singleMoveTurn: Boolean, runTime: Long = 1750): Move = request.allowedMoves match {
-    case x :: Nil if x == MoveType.Attack => bestMove(request.board, !singleMoveTurn, runTime)
-    case _ => bestMove(request.board, haveExtraMove = false, runTime)
+    case x :: Nil if x == MoveType.Attack => bestMove(request.board, mustAttack = true, singleMoveTurn, runTime)
+    case _ => bestMove(request.board, mustAttack = false, singleMoveTurn = false, runTime)
   }
 
-  def bestMove(board: Board, haveExtraMove: Boolean, runTime: Long): Move = {
+  def bestMove(board: Board, mustAttack: Boolean, singleMoveTurn: Boolean, runTime: Long): Move = {
 
     var timedOut = false
     def leastEvenScore(p: Player) = if (p == us) Int.MinValue else Int.MaxValue
     def moreEven(p: Player)(x: Int, y: Int) = if (p == us) x > y else x < y
 
-    def minimax(b: Board, firstMoveInPath: Move, p: Player, hasExtraMove: Boolean, depth: Int, alpha: Int, beta: Int): (Move, Int, Int) = {
+    def minimax(b: Board, firstMoveInPath: Move, p: Player, attackOnly: Boolean, hasExtraMove: Boolean, depth: Int, alpha: Int, beta: Int): (Move, Int, Int) = {
       if (timedOut) {
         throw new InterruptedException("Minimax interrupted due to timeout.")
       } else {
@@ -40,7 +40,7 @@ class Bot(private var myColor: Option[Player]) {
         if (depth == 0 || currentScore == Int.MinValue) {
           (firstMoveInPath, currentScore, depth)
         } else {
-          val validMoves = if (hasExtraMove) p.allValidMoves(b, attackOnly = true) else p.allValidMoves(b)
+          val validMoves = p.allValidMoves(b, attackOnly)
           if (validMoves.isEmpty) {
             (firstMoveInPath, leastEvenScore(p), depth)
           } else {
@@ -58,6 +58,7 @@ class Bot(private var myColor: Option[Player]) {
                 b applyMove validMove,
                 if (firstMoveInPath == null) validMove else firstMoveInPath,
                 nextPlayer,
+                nextHasExtraMove,
                 nextHasExtraMove,
                 depth - 1,
                 newAlpha,
@@ -116,7 +117,7 @@ class Bot(private var myColor: Option[Player]) {
       // We can stop if we find a game ender, and take any move.
       // Otherwise, stop on timeout.
       while (score < Int.MaxValue && score > Int.MinValue && !timedOut) {
-        val (m, s, _) = minimax(board, null, us, haveExtraMove, depth, Int.MinValue, Int.MaxValue)
+        val (m, s, _) = minimax(board, null, us, mustAttack, !singleMoveTurn && mustAttack, depth, Int.MinValue, Int.MaxValue)
         move = m
         score = s
         //com.gjos.scala.swoc.util.Stopwatch().tell(s"Explored game state with $depth move lookahead and found $m with score $s")

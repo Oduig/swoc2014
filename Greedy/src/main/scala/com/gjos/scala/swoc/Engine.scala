@@ -53,7 +53,7 @@ class Engine(private val bot: Bot, private val ioManager: IOManager) {
   private def handleProcessedMove(): Option[Player] = {
     val processedMove: ProcessedMove = JsonConverters.createProcessedMove(ioManager.readLine())
     bot.handleProcessedMove(processedMove)
-    processedMove.winner
+    Option(processedMove.winner)
   }
 }
 

@@ -16,7 +16,7 @@ object JsonConverters {
   }*/
   def createInitiateRequest(jsonMessage: String): InitiateRequest = {
     val playerNum = parse(jsonMessage).getAs[String]("Color").toInt
-    InitiateRequest(Player.byValue(playerNum).get)
+    InitiateRequest(Player.byValue(playerNum))
   }
 
   /**{
@@ -50,7 +50,7 @@ object JsonConverters {
     }
     val winnerPlayerNum = json.getAs[String]("Winner").toInt
     val move = Move(MoveType.byValue(moveType), fromLocation getOrElse null, toLocation getOrElse null)
-    ProcessedMove(Player.byValue(playerNum).get, move, Player.byValue(winnerPlayerNum))
+    ProcessedMove(Player.byValue(playerNum), move, Player.byValue(winnerPlayerNum))
   }
 
   /**{

@@ -68,9 +68,9 @@ object Player {
     val opponent = Player.White
   }
 
-  def byValue(i: Int): Option[Player] = i match {
-    case _ if i > 0 => Some(White)
-    case _ if i < 0 => Some(Black)
-    case _ => None
+  def byValue(i: Int): Player = i match {
+    case _ if i > 0 => White
+    case _ if i < 0 => Black
+    case _ => null
   }
 }
