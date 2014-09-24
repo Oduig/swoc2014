@@ -8,7 +8,7 @@ import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.mutable.ArrayBuffer
 
-class Bot(private var myColor: Option[Player]) {
+class Bot(private var myColor: Option[Player], private val verbose: Boolean = false) {
   private val random = new Random
   private lazy val us = myColor.get
 
@@ -31,18 +31,19 @@ class Bot(private var myColor: Option[Player]) {
     def leastEvenScore(p: Player) = if (p == us) Int.MinValue else Int.MaxValue
     def moreEven(p: Player)(x: Int, y: Int) = if (p == us) x > y else x < y
 
+    // Returns Move, score, longest guaranteed path length for loss
     def minimax(b: Board, firstMoveInPath: Move, p: Player, attackOnly: Boolean, hasExtraMove: Boolean, depth: Int, alpha: Int, beta: Int): (Move, Int, Int) = {
       if (timedOut) {
         throw new InterruptedException("Minimax interrupted due to timeout.")
       } else {
         val currentScore = b.score(us)
-        // Stop at max recursion depth or when we have lost. If we have won, it's already covered.
+        // Stop at max recursion depth or when we have lost. If we have won, it's already covered by iterative deepening.
         if (depth == 0 || currentScore == Int.MinValue) {
-          (firstMoveInPath, currentScore, depth)
+          (firstMoveInPath, currentScore, 0)
         } else {
           val validMoves = p.allValidMoves(b, attackOnly)
           if (validMoves.isEmpty) {
-            (firstMoveInPath, leastEvenScore(p), depth)
+            (firstMoveInPath, leastEvenScore(p), 0)
           } else {
             val nextPlayer = if (hasExtraMove) p else p.opponent
             val nextHasExtraMove = !hasExtraMove
@@ -54,6 +55,8 @@ class Bot(private var myColor: Option[Player]) {
             while (i < validMoves.size && !cutoff) {
               if (timedOut) throw new InterruptedException("Minimax interrupted due to timeout.")
               val validMove = validMoves(i)
+              //if (firstMoveInPath != null && firstMoveInPath.to == (BoardLocation fromLabel "E9"))
+                //println("--" * (8-depth) + validMove) //FIXME
               val outcome = minimax(
                 b applyMove validMove,
                 if (firstMoveInPath == null) validMove else firstMoveInPath,
@@ -79,7 +82,7 @@ class Bot(private var myColor: Option[Player]) {
             // extra special bonus extension: don't take the first optimal move, take a random optimal move
             val compare = moreEven(p) _
             var evenestSoFar = leastEvenScore(p)
-            var deepestSoFar: Int = depth
+            var bestLossPathLengthSoFar: Int = leastEvenScore(p)
             var optimalMoveIndices = List[Int]()
             i = 0
             while (i < childScores.size) {
@@ -88,11 +91,11 @@ class Bot(private var myColor: Option[Player]) {
               if (compare(thisone, evenestSoFar)) {
                 optimalMoveIndices = List[Int](i)
                 evenestSoFar = thisone
-                deepestSoFar = childScores(i)._3
+                bestLossPathLengthSoFar = childScores(i)._3
               } else if (thisone == evenestSoFar) {
                 if (thisone == Int.MinValue) { // This is to maximize the length of the game when we are losing for sure
-                  if (childScores(i)._3 < deepestSoFar) {
-                    deepestSoFar = childScores(i)._3
+                  if (compare(childScores(i)._3, bestLossPathLengthSoFar)) {
+                    bestLossPathLengthSoFar = childScores(i)._3
                     optimalMoveIndices = List(i)
                   } else {}
                 } else {
@@ -101,9 +104,8 @@ class Bot(private var myColor: Option[Player]) {
               }
               i += 1
             }
-            val best = childScores(optimalMoveIndices.toVector(random.nextInt(optimalMoveIndices.size)))
-            //println(best)
-            best
+            val (move, score, pathLength) = childScores(optimalMoveIndices.toVector(random.nextInt(optimalMoveIndices.size)))
+            (move, score, pathLength + 1)
           }
         }
       }
@@ -120,7 +122,7 @@ class Bot(private var myColor: Option[Player]) {
         val (m, s, _) = minimax(board, null, us, mustAttack, !singleMoveTurn && mustAttack, depth, Int.MinValue, Int.MaxValue)
         move = m
         score = s
-        //com.gjos.scala.swoc.util.Stopwatch().tell(s"Explored game state with $depth move lookahead and found $m with score $s")
+        if (verbose) com.gjos.scala.swoc.util.Stopwatch().tell(s"Explored game state with $depth move lookahead and found $m with score $s")
         depth += 1
       }
     } catch {

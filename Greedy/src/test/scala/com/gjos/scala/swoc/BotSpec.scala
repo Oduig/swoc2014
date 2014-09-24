@@ -50,5 +50,10 @@ class BotSpec extends WordSpec with Matchers {
       val move = new Bot(Some(us)).handleMove(moveRequest("fucking-stupid.txt"), singleMoveTurn = false)
       move.moveType should not be MoveType.Attack
     }
+
+    "should take the longest path when losing" in {
+      val move = new Bot(Some(us)).handleMove(moveRequest("take-longest-path.txt"), singleMoveTurn = false)
+      move should not be Move(MoveType.Attack, BoardLocation fromLabel "F8", BoardLocation fromLabel "E9")
+    }
   }
 }
