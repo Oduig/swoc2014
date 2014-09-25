@@ -1,18 +1,14 @@
 package com.gjos.scala.swoc.protocol
 
-import scala.collection.mutable
-import com.gjos.scala.swoc.Score
-import com.gjos.scala.swoc.protocol.Field._
 import java.util
 
-class Board(private val state: Array[Int] = Board.defaultState) {
+class Board(private val state: Array[Field] = Board.defaultState) {
 
-  def getField(location: (Int, Int)): Int = getField(location._1, location._2)
-  def getField(x: Int, y: Int): Int = state(y * Board.diameter + x)
+  def getField(location: Location): Field = state(location)
 
   def score(us: Player) = Score.score(this, us)
   def iterator = state.iterator
-  def myHashCode = util.Arrays.hashCode(state)
+  def myHashCode: BoardHash = util.Arrays.hashCode(state)
 
   private def copy() = {
     val newState = for (field <- state) yield field
@@ -21,25 +17,24 @@ class Board(private val state: Array[Int] = Board.defaultState) {
 
   def applyMove(move: Move): Board = {
     val newBoard = copy()
-    move.moveType match {
+    Move.moveType(move) match {
       case MoveType.Pass => newBoard
       case MoveType.Attack =>
-        val fromField = getField(move.from)
-        newBoard.setField(move.from, Field.empty)
-        newBoard.setField(move.to, fromField)
+        val fromField = getField(Move.from(move))
+        newBoard.setField(Move.from(move), Field.empty)
+        newBoard.setField(Move.to(move), fromField)
       case MoveType.Strengthen =>
-        val fromField = getField(move.from)
-        val toField = getField(move.to)
-        newBoard.setField(move.from, Field.empty)
-        newBoard.setField(move.to, Field.strengthened(fromField, toField))
+        val fromField = getField(Move.from(move))
+        val toField = getField(Move.to(move))
+        newBoard.setField(Move.from(move), Field.empty)
+        newBoard.setField(Move.to(move), Field.strengthened(fromField, toField))
     }
     newBoard
   }
 
-  def setField(location: (Int, Int), field: Int) = {
-    state(location._2 * Board.diameter + location._1) = field
+  def setField(location: Location, field: Field) {
+    state(location) = field
   }
-
 
   private def totalCount(player: Player, stone: Stone): Int = state count { field =>
     Field.player(field) == player && Field.stone(field) == stone
@@ -49,8 +44,8 @@ class Board(private val state: Array[Int] = Board.defaultState) {
     System.out.println("-- owners --------  -- stones --------  -- heights ----------------")
     for (y <- Board.fullRange) {
       for (x <- Board.fullRange) {
-        val c = if (BoardLocation.IsValid(x, y)) {
-          Field.player(getField(x, y)) match {
+        val c = if (Location.isValid(x, y)) {
+          Field.player(getField(Location.join(x, y))) match {
             case Player.Black => 'B'
             case Player.White => 'W'
             case _ => '.'
@@ -60,8 +55,8 @@ class Board(private val state: Array[Int] = Board.defaultState) {
       }
       System.out.print("  ")
       for (x <- Board.fullRange) {
-        val c = if (BoardLocation.IsValid(x, y)) {
-          Field.stone(getField(x, y)) match {
+        val c = if (Location.isValid(x, y)) {
+          Field.stone(getField(Location.join(x, y))) match {
             case Stone.Pebble => 'a'
             case Stone.Rock => 'b'
             case Stone.Boulder => 'c'
@@ -72,7 +67,7 @@ class Board(private val state: Array[Int] = Board.defaultState) {
       }
       System.out.print("  ")
       for (x <- Board.fullRange) {
-        val s = if (BoardLocation.IsValid(x, y)) f"${Field.height(getField(x, y))}%2d" else "  "
+        val s = if (Location.isValid(x, y)) f"${Field.height(getField(Location.join(x, y)))}%2d" else "  "
         System.out.print(" " + s)
       }
       println()
@@ -104,7 +99,7 @@ object Board {
     empty, empty, empty, empty, whitePebble, blackPebble, blackPebble, blackPebble, blackPebble
   )
 
-  def fromInts(_state: Iterable[Iterable[Int]]) = {
+  def fromInts(_state: Iterable[Iterable[Field]]) = {
     val state = for {
       row <- _state
       field <- row
@@ -112,7 +107,7 @@ object Board {
     new Board(state.toArray)
   }
 
-  private val diameter = 9
+  val diameter = 9
   private val radius = 5
   val halfRange = List.tabulate(radius)(identity)
   val fullRange = List.tabulate(diameter)(identity)

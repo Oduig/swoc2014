@@ -1,60 +1,49 @@
 package com.gjos.scala.swoc.protocol
 
-import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
-import com.gjos.scala.swoc.Direction
-
 trait Player {
   val value: Int
   val opponent: Player
 
   def allValidMoves(board: Board, attackOnly: Boolean = false): Vector[Move] = {
-    var v = if (attackOnly) Vector.empty[Move] else Vector(Move(MoveType.Pass, null, null))
+    var v = if (attackOnly) Vector.empty[Move] else Vector(Move(MoveType.Pass, -1, -1))
 
-    def discover(startX: Int, startY: Int, direction: Direction) {
-      var x = startX
-      var y = startY
-      var prevX = -1
-      var prevY = -1
-      while (x < 9 && y < 9) {
-        if ((x == 4 && y == 4) || (x - y >= 5 && y - x >= 5)) {
-          prevX = -1
-          prevY = -1
+    def discover(start: Location, direction: Direction) {
+      var curLoc: Location = start
+      var prevLoc: Location = -1
+      while (curLoc < 9 * 9) {
+        if (!Location.isValid(curLoc)) {
+          prevLoc = -1
         } else {
-          val cur = board.getField(x, y)
+          val cur = board.getField(curLoc)
           if (cur != 0) {
-            if (prevX >= 0) {
-              val prev = board.getField(prevX, prevY)
+            if (prevLoc >= 0) {
+              val prev = board.getField(prevLoc)
               val prevPlayer = Field.player(prev)
               val curPlayer = Field.player(cur)
               val prevHeight = Field.height(prev)
               val curHeight = Field.height(cur)
               if (prevPlayer == this && curPlayer == this && !attackOnly) {
-                v = v :+ Move(MoveType.Strengthen, (x, y), (prevX, prevY))
-                v = v :+ Move(MoveType.Strengthen, (prevX, prevY), (x, y))
+                v = v :+ Move(MoveType.Strengthen, curLoc, prevLoc)
+                v = v :+ Move(MoveType.Strengthen, prevLoc, curLoc)
               } else if (prevPlayer != this && curPlayer == this && curHeight >= prevHeight) {
-                v = v :+ Move(MoveType.Attack, (x, y), (prevX, prevY))
+                v = v :+ Move(MoveType.Attack, curLoc, prevLoc)
               } else if (prevPlayer == this && curPlayer != this && prevHeight >= curHeight) {
-                v = v :+ Move(MoveType.Attack, (prevX, prevY), (x, y))
+                v = v :+ Move(MoveType.Attack, prevLoc, curLoc)
               }
             }
-            prevX = x
-            prevY = y
+            prevLoc = curLoc
           }
         }
-        x = x + direction.x
-        y = y + direction.y
+        curLoc += direction
       }
     }
 
-    for (y <- Board.fullRange) discover(0, y, Direction.NorthEast)
-    for (x <- Board.fullRange) discover(x, 0, Direction.South)
-    for (y <- Board.halfRange) discover(0, y, Direction.SouthEast)
-    for (x <- Board.halfRange if x > 0) discover(x, 0, Direction.SouthEast)
+    for (y <- Board.fullRange) discover(y * 9, Direction.NorthEast)
+    for (x <- Board.fullRange) discover(x, Direction.South)
+    for (y <- Board.halfRange) discover(y * 9, Direction.SouthEast)
+    for (x <- Board.halfRange if x > 0) discover(x, Direction.SouthEast)
     v
   }
-
-
 }
 
 object Player {

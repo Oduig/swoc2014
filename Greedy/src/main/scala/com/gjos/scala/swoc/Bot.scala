@@ -8,7 +8,7 @@ import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.mutable.ArrayBuffer
 
-class Bot(private var myColor: Option[Player], private val verbose: Boolean = false) {
+class Bot(private var myColor: Option[Player], private val verbose: Boolean = true) {
   private val random = new Random
   private lazy val us = myColor.get
 
@@ -16,9 +16,7 @@ class Bot(private var myColor: Option[Player], private val verbose: Boolean = fa
     myColor = Some(request.color)
   }
 
-  def handleProcessedMove(move: ProcessedMove) {
-    //println(move)
-  }
+  def handleProcessedMove(move: ProcessedMove) { }
 
   def handleMove(request: MoveRequest, singleMoveTurn: Boolean, runTime: Long = 1750): Move = request.allowedMoves match {
     case x :: Nil if x == MoveType.Attack => bestMove(request.board, mustAttack = true, singleMoveTurn, runTime)
@@ -28,11 +26,11 @@ class Bot(private var myColor: Option[Player], private val verbose: Boolean = fa
   def bestMove(board: Board, mustAttack: Boolean, singleMoveTurn: Boolean, runTime: Long): Move = {
 
     var timedOut = false
-    def leastEvenScore(p: Player) = if (p == us) Int.MinValue else Int.MaxValue
+    def leastEvenScore(p: Player): Score = if (p == us) Int.MinValue else Int.MaxValue
     def moreEven(p: Player)(x: Int, y: Int) = if (p == us) x > y else x < y
 
     // Returns Move, score, longest guaranteed path length for loss
-    def minimax(b: Board, firstMoveInPath: Move, p: Player, attackOnly: Boolean, hasExtraMove: Boolean, depth: Int, alpha: Int, beta: Int): (Move, Int, Int) = {
+    def minimax(b: Board, firstMoveInPath: Move, p: Player, attackOnly: Boolean, hasExtraMove: Boolean, depth: Int, alpha: Score, beta: Score): (Move, Score, Int) = {
       if (timedOut) {
         throw new InterruptedException("Minimax interrupted due to timeout.")
       } else {
@@ -47,7 +45,7 @@ class Bot(private var myColor: Option[Player], private val verbose: Boolean = fa
           } else {
             val nextPlayer = if (hasExtraMove) p else p.opponent
             val nextHasExtraMove = !hasExtraMove
-            val childScores = ArrayBuffer.empty[(Move, Int, Int)]
+            val childScores = ArrayBuffer.empty[(Move, Score, Int)]
             var i: Int = 0
             var newAlpha = alpha
             var newBeta = beta
@@ -55,11 +53,9 @@ class Bot(private var myColor: Option[Player], private val verbose: Boolean = fa
             while (i < validMoves.size && !cutoff) {
               if (timedOut) throw new InterruptedException("Minimax interrupted due to timeout.")
               val validMove = validMoves(i)
-              //if (firstMoveInPath != null && firstMoveInPath.to == (BoardLocation fromLabel "E9"))
-                //println("--" * (8-depth) + validMove) //FIXME
               val outcome = minimax(
                 b applyMove validMove,
-                if (firstMoveInPath == null) validMove else firstMoveInPath,
+                if (firstMoveInPath < 0) validMove else firstMoveInPath,
                 nextPlayer,
                 nextHasExtraMove,
                 nextHasExtraMove,
@@ -112,17 +108,17 @@ class Bot(private var myColor: Option[Player], private val verbose: Boolean = fa
     }
 
     var depth = 1
-    var move: Move = null
+    var move: Move = -1
     var score: Int = 0
     Future(blocking(Thread sleep runTime)) onComplete (_ => timedOut = true)
     try {
       // We can stop if we find a game ender, and take any move.
       // Otherwise, stop on timeout.
       while (score < Int.MaxValue && score > Int.MinValue && !timedOut) {
-        val (m, s, _) = minimax(board, null, us, mustAttack, !singleMoveTurn && mustAttack, depth, Int.MinValue, Int.MaxValue)
+        val (m, s, _) = minimax(board, -1, us, mustAttack, !singleMoveTurn && mustAttack, depth, Int.MinValue, Int.MaxValue)
         move = m
         score = s
-        if (verbose) com.gjos.scala.swoc.util.Stopwatch().tell(s"Explored game state with $depth move lookahead and found $m with score $s")
+        if (verbose) com.gjos.scala.swoc.util.Stopwatch().tell(s"Explored game state with $depth move lookahead and found ${Move.toString(move)} with score $s")
         depth += 1
       }
     } catch {

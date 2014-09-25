@@ -25,7 +25,7 @@ object JsonConverters {
   }*/
   def createMoveRequest(jsonMessage: String): MoveRequest = {
     val json = parse(jsonMessage)
-    val boardSetup: List[List[Int]] =
+    val boardSetup: List[List[Field]] =
       for (row <- json.getAs[JSONObject]("Board").getList[JSONArray]("state"))
       yield row.getList[Long]() map (_.toInt)
     val allowedMoves: List[Int] = json.getList[String]("AllowedMoves") map (_.toInt)
@@ -43,13 +43,13 @@ object JsonConverters {
     val moveObject = json.getAs[JSONObject]("Move")
     val moveType = moveObject.getAs[String]("Type").toInt
     val fromLocation = Option(moveObject.getAs[Any]("From")) map {
-      case moveFrom: JSONObject => (moveFrom.getAs[Long]("X").toInt, moveFrom.getAs[Long]("Y").toInt)
+      case moveFrom: JSONObject => Location.join(moveFrom.getAs[Long]("X").toInt, moveFrom.getAs[Long]("Y").toInt)
     }
     val toLocation = Option(moveObject.getAs[Any]("To")) map {
-      case moveTo: JSONObject => (moveTo.getAs[Long]("X").toInt, moveTo.getAs[Long]("Y").toInt)
+      case moveTo: JSONObject => Location.join(moveTo.getAs[Long]("X").toInt, moveTo.getAs[Long]("Y").toInt)
     }
     val winnerPlayerNum = json.getAs[String]("Winner").toInt
-    val move = Move(MoveType.byValue(moveType), fromLocation getOrElse null, toLocation getOrElse null)
+    val move = Move(MoveType.byValue(moveType), fromLocation getOrElse -1, toLocation getOrElse -1)
     ProcessedMove(Player.byValue(playerNum), move, Player.byValue(winnerPlayerNum))
   }
 
@@ -59,13 +59,16 @@ object JsonConverters {
     "To": <BoardLocation>
   }*/
   def toJson(move: Move): String = {
-    def boardLocationToJson(bl: (Int, Int), key: String) =
-      if (bl != null) s""""$key": { "X": ${bl._1}, "Y": ${bl._2} }""" else ""
+    def boardLocationToJson(bl: Location, key: String) =
+      if (bl >= 0) {
+        val xy = Location.split(bl)
+        s""""$key": { "X": ${xy._1}, "Y": ${xy._2} }"""
+      } else ""
 
     List(
-      s""""Type": ${move.moveType.value}""",
-      boardLocationToJson(move.from, "From"),
-      boardLocationToJson(move.to, "To")
+      s""""Type": ${Move.moveType(move).value}""",
+      boardLocationToJson(Move.from(move), "From"),
+      boardLocationToJson(Move.to(move), "To")
     ).filter(_.nonEmpty).mkString("{", ", ", "}")
   }
 }

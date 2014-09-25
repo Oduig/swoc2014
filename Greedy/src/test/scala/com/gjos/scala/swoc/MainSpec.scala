@@ -28,7 +28,6 @@ class MainSpec extends WordSpec with Matchers {
       val maxRuntime = 2000.millis
       Await.ready(Future(engine.run()), maxRuntime)
       val outLines = output().split(ioManager.newline).toList
-      outLines foreach println
       outLines.size should be (1)
     }
   }

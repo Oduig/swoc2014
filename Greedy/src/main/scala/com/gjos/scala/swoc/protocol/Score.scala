@@ -1,7 +1,4 @@
-package com.gjos.scala.swoc
-
-import com.gjos.scala.swoc.protocol.{Field, Board, Stone, Player}
-import com.gjos.scala.swoc.util.ScoreCache
+package com.gjos.scala.swoc.protocol
 
 object Score {
   /**
@@ -9,7 +6,7 @@ object Score {
    * Rates the board by the difference between us and them,
    * where score is determined by how close we are to having a type of stones eliminated
    */
-  def score(board: Board, us: Player): Int = {
+  def score(board: Board, us: Player): Score = {
     if (ScoreCache.hasKey(board)) {
       ScoreCache.get(board)
     } else {

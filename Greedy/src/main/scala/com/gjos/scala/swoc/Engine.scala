@@ -42,11 +42,11 @@ class Engine(private val bot: Bot, private val ioManager: IOManager) {
   private def handleMoveRequest(singleMoveTurn: Boolean = false) {
     val moveRequest: MoveRequest = JsonConverters.createMoveRequest(ioManager.readLine())
     val move = bot.handleMove(moveRequest, singleMoveTurn)
-    val out = if (move == null) {
+    val out = if (move < 0) {
       System.err.println("Valar morghulis.")
       "If I die, what's the point?"
     } else {
-      System.err.println("I chose move " + move)
+      System.err.println("I chose move " + Move.toString(move))
       JsonConverters.toJson(move)
     }
     ioManager.writeLine(out)
