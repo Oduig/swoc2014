@@ -20,8 +20,8 @@ class BoardSpec extends WordSpec with Matchers {
       val x0 = board.score(us)
       val goodMove = Move(MoveType.Attack, Location fromLabel "E4", Location fromLabel "D3")
       val badMove = Move(MoveType.Attack, Location fromLabel "A4", Location fromLabel "E4")
-      val x1 = board.applyMove(badMove).score(us)
-      val x2 = board.applyMove(goodMove).score(us)
+      val x1 = Board.applyMove(board, badMove).score(us)
+      val x2 = Board.applyMove(board, goodMove).score(us)
       x1 should be < x0
       x2 should be > x0
     }

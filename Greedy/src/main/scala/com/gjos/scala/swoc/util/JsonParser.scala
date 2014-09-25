@@ -9,11 +9,11 @@ object JsonParser {
 
   implicit class RichJsonObject(val obj: JSONObject) extends AnyVal {
     def getAs[T](key: String): T = obj.get(key).asInstanceOf[T]
-    def getList[T](): List[T] = obj.asInstanceOf[java.util.List[JSONObject]].asScala.toList map (_.asInstanceOf[T])
-    def getList[T](key: String): List[T] = obj.get(key).asInstanceOf[java.util.List[Any]].asScala.toList map (_.asInstanceOf[T])
+    def getArray[T: Manifest](): Array[T] = obj.asInstanceOf[java.util.List[T]].asScala.toArray
+    def getArray[T: Manifest](key: String): Array[T] = obj.get(key).asInstanceOf[java.util.List[T]].asScala.toArray
   }
 
   implicit class RichJsonArray(val obj: JSONArray) extends AnyVal {
-    def getList[T](): List[T] = obj.asInstanceOf[java.util.List[Any]].asScala.toList map (_.asInstanceOf[T])
+    def getArray[T: Manifest](): Array[T] = obj.asInstanceOf[java.util.List[T]].asScala.toArray
   }
 }

@@ -25,11 +25,13 @@ object JsonConverters {
   }*/
   def createMoveRequest(jsonMessage: String): MoveRequest = {
     val json = parse(jsonMessage)
-    val boardSetup: List[List[Field]] =
-      for (row <- json.getAs[JSONObject]("Board").getList[JSONArray]("state"))
-      yield row.getList[Long]() map (_.toInt)
-    val allowedMoves: List[Int] = json.getList[String]("AllowedMoves") map (_.toInt)
-    MoveRequest(Board.fromInts(boardSetup), allowedMoves.toList map MoveType.byValue)
+    val boardSetup: Array[Field] =
+      for {
+        row <- json.getAs[JSONObject]("Board").getArray[JSONArray]("state")
+        field <- row.getArray[Long]()
+      } yield field.toInt
+    val allowedMoves: Array[Int] = json.getArray[String]("AllowedMoves") map (_.toInt)
+    MoveRequest(new FastBoard(boardSetup), allowedMoves map MoveType.byValue)
   }
 
   /**{

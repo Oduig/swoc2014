@@ -5,6 +5,5 @@ package object protocol {
   type Move = Int
   type Field = Int
   type Direction = Int
-  type Score = Int
   type BoardHash = Int
 }

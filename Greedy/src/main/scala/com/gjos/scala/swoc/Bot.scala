@@ -18,19 +18,19 @@ class Bot(private var myColor: Option[Player], private val verbose: Boolean = tr
 
   def handleProcessedMove(move: ProcessedMove) { }
 
-  def handleMove(request: MoveRequest, singleMoveTurn: Boolean, runTime: Long = 1750): Move = request.allowedMoves match {
-    case x :: Nil if x == MoveType.Attack => bestMove(request.board, mustAttack = true, singleMoveTurn, runTime)
-    case _ => bestMove(request.board, mustAttack = false, singleMoveTurn = false, runTime)
+  def handleMove(request: MoveRequest, singleMoveTurn: Boolean, runTime: Long = 1750): Move = {
+    if (request.allowedMoves.size == 1) bestMove(request.board, mustAttack = true, singleMoveTurn, runTime)
+    else bestMove(request.board, mustAttack = false, singleMoveTurn = false, runTime)
   }
 
-  def bestMove(board: Board, mustAttack: Boolean, singleMoveTurn: Boolean, runTime: Long): Move = {
+  def bestMove(board: FastBoard, mustAttack: Boolean, singleMoveTurn: Boolean, runTime: Long): Move = {
 
     var timedOut = false
-    def leastEvenScore(p: Player): Score = if (p == us) Int.MinValue else Int.MaxValue
+    def leastEvenScore(p: Player): Int = if (p == us) Int.MinValue else Int.MaxValue
     def moreEven(p: Player)(x: Int, y: Int) = if (p == us) x > y else x < y
 
     // Returns Move, score, longest guaranteed path length for loss
-    def minimax(b: Board, firstMoveInPath: Move, p: Player, attackOnly: Boolean, hasExtraMove: Boolean, depth: Int, alpha: Score, beta: Score): (Move, Score, Int) = {
+    def minimax(b: FastBoard, firstMoveInPath: Move, p: Player, attackOnly: Boolean, hasExtraMove: Boolean, depth: Int, alpha: Int, beta: Int): (Move, Int, Int) = {
       if (timedOut) {
         throw new InterruptedException("Minimax interrupted due to timeout.")
       } else {
@@ -45,16 +45,16 @@ class Bot(private var myColor: Option[Player], private val verbose: Boolean = tr
           } else {
             val nextPlayer = if (hasExtraMove) p else p.opponent
             val nextHasExtraMove = !hasExtraMove
-            val childScores = ArrayBuffer.empty[(Move, Score, Int)]
+            val childScores = ArrayBuffer.empty[(Move, Int, Int)]
             var i: Int = 0
             var newAlpha = alpha
             var newBeta = beta
             var cutoff = false
             while (i < validMoves.size && !cutoff) {
               if (timedOut) throw new InterruptedException("Minimax interrupted due to timeout.")
-              val validMove = validMoves(i)
+              val validMove = validMoves.get(i)
               val outcome = minimax(
-                b applyMove validMove,
+                Board.applyMove(b, validMove),
                 if (firstMoveInPath < 0) validMove else firstMoveInPath,
                 nextPlayer,
                 nextHasExtraMove,
