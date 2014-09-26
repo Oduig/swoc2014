@@ -2,7 +2,7 @@ package com.gjos.scala.swoc
 
 import java.util.Random
 import com.gjos.scala.swoc.protocol._
-import com.gjos.scala.swoc.protocol.InitiateRequest
+import com.gjos.scala.swoc.protocol.Player
 import scala.concurrent.blocking
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -12,8 +12,8 @@ class Bot(private var myColor: Option[Player], private val verbose: Boolean = tr
   private val random = new Random
   private lazy val us = myColor.get
 
-  def handleInitiate(request: InitiateRequest) {
-    myColor = Some(request.color)
+  def handleInitiate(player: Player) {
+    myColor = Some(player)
   }
 
   def handleProcessedMove(move: ProcessedMove) { }

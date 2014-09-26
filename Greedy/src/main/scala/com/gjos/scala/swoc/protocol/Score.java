@@ -16,7 +16,7 @@ public class Score {
             int theirScore = utility(board, them);
             //println(s"Me: $myScore, them: $theirScore")
 
-            int score = 0;
+            int score;
             if (theirScore <= 0) {
                 // If we can win this turn, the rest doesn't matter.
                 score = Integer.MAX_VALUE;

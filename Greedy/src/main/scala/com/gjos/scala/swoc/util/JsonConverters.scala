@@ -3,7 +3,7 @@ package com.gjos.scala.swoc.util
 import com.gjos.scala.swoc.protocol._
 import org.json.simple.{JSONArray, JSONObject}
 import com.gjos.scala.swoc.protocol.MoveRequest
-import com.gjos.scala.swoc.protocol.InitiateRequest
+import com.gjos.scala.swoc.protocol.Player
 import com.gjos.scala.swoc.protocol.ProcessedMove
 import scala.Some
 import com.gjos.scala.swoc.protocol.Move
@@ -14,9 +14,9 @@ object JsonConverters {
   /**{
     "Color": <PlayerColor>
   }*/
-  def createInitiateRequest(jsonMessage: String): InitiateRequest = {
+  def createInitiateRequest(jsonMessage: String): Player = {
     val playerNum = parse(jsonMessage).getAs[String]("Color").toInt
-    InitiateRequest(playerNum)
+    if (playerNum < 0) 2 else playerNum
   }
 
   /**{
@@ -32,7 +32,8 @@ object JsonConverters {
       val row = jsonRows.next()
       val fields = row.getList[Long]().iterator()
       while (fields.hasNext) {
-        board(i) = fields.next().toInt
+        val f = fields.next().toInt
+        board(i) = Field.encode(if (f == 0) 0 else if (f < 0) 2 else 1, Math.abs(f % 4), Math.abs(f / 4))
         i += 1
       }
     }
@@ -58,7 +59,7 @@ object JsonConverters {
     }
     val winnerPlayerNum = json.getAs[String]("Winner").toInt
     val move = Move(moveType, fromLocation getOrElse -1, toLocation getOrElse -1)
-    ProcessedMove(playerNum, move, winnerPlayerNum)
+    ProcessedMove(if (playerNum < 0) 2 else playerNum, move, winnerPlayerNum)
   }
 
   /**{

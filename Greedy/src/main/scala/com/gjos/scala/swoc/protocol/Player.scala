@@ -8,9 +8,9 @@ object Player {
   private val halfRange = Array(0, 1, 2, 3, 4)
 
   val White = 1
-  val Black = -1
+  val Black = 2
 
-  def opponent(p: Player) = -p
+  def opponent(p: Player) = if (p == White) Black else White
 
   def allValidMoves(p: Player, board: FastBoard, attackOnly: Boolean = false): util.ArrayList[Move] = {
     if (MoveCache.hasKey(board, attackOnly)) {

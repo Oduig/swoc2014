@@ -19,9 +19,9 @@ class Engine(private val bot: Bot, private val ioManager: IOManager) {
   }
 
   private def doInitiateRequest() {
-    val initRequest = JsonConverters.createInitiateRequest(ioManager.readLine())
-    botColor = Some(initRequest.color)
-    bot.handleInitiate(initRequest)
+    val player = JsonConverters.createInitiateRequest(ioManager.readLine())
+    botColor = Some(player)
+    bot.handleInitiate(player)
   }
 
   private def doFirstRound(): Option[Player] = botColor match {

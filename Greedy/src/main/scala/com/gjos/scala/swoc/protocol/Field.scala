@@ -1,14 +1,14 @@
 package com.gjos.scala.swoc.protocol
 
 object Field {
+  FastField.init()
   val Empty = 0
 
-  def player(field: Field): Player = if (field > 0) Player.White else if (field < 0) Player.Black else 0
-  def stone(field: Field): Stone = Math.abs(field) % 4
-  def height(field: Field): Int = Math.abs(field) / 4
+  def player(field: Field): Player = FastField.player(field)
+  def stone(field: Field): Stone = FastField.stone(field)
+  def height(field: Field): Int = FastField.height(field)
 
-  // Just keep the sign and multiple of 4 of the old stone, and add it to the new one
-  def strengthened(source: Field, target: Field) = (target / 4 * 4) + source
+  def strengthened(source: Field, target: Field) = (target % 100) + source
 
-  private def encode(player: Player, stone: Stone, height: Int): Field = player * (height * 4 + stone)
+  def encode(player: Player, stone: Stone, height: Int): Field = if (height == 0) Empty else FastField.encode(player)(stone)(height)
 }
