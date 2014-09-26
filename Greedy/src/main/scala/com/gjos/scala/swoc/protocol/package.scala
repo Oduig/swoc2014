@@ -6,4 +6,7 @@ package object protocol {
   type Field = Int
   type Direction = Int
   type BoardHash = Int
+  type MoveType = Int
+  type Player = Int
+  type Stone = Int
 }

@@ -21,7 +21,7 @@ public class FastBoard {
         return new FastBoard(_state.clone());
     }
 
-    public int score(Player us) {
+    public int score(int us) {
         return Score.score(this, us);
     }
 

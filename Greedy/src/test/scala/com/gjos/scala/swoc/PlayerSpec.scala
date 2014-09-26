@@ -29,7 +29,7 @@ class PlayerSpec extends WordSpec with Matchers {
       val validMove2 = Move(MoveType.Strengthen, Location fromLabel "A4", Location fromLabel "E4")
       val invalidMove = Move(MoveType.Strengthen, Location fromLabel "E4", Location fromLabel "E2")
 
-      val moves = us.allValidMoves(board)
+      val moves = Player.allValidMoves(us, board)
       moves should contain (validMove0)
       moves should contain (validMove1)
       moves should contain (validMove2)

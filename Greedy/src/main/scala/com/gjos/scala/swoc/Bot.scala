@@ -39,11 +39,11 @@ class Bot(private var myColor: Option[Player], private val verbose: Boolean = tr
         if (depth == 0 || currentScore == Int.MinValue) {
           (firstMoveInPath, currentScore, 0)
         } else {
-          val validMoves = p.allValidMoves(b, attackOnly)
+          val validMoves = Player.allValidMoves(p, b, attackOnly)
           if (validMoves.isEmpty) {
             (firstMoveInPath, leastEvenScore(p), 0)
           } else {
-            val nextPlayer = if (hasExtraMove) p else p.opponent
+            val nextPlayer = if (hasExtraMove) p else Player.opponent(p)
             val nextHasExtraMove = !hasExtraMove
             val childScores = ArrayBuffer.empty[(Move, Int, Int)]
             var i: Int = 0

@@ -8,12 +8,12 @@ object Board {
       case MoveType.Pass => newBoard
       case MoveType.Attack =>
         val fromField = board.getField(Move.from(move))
-        newBoard.setField(Move.from(move), Field.empty)
+        newBoard.setField(Move.from(move), Field.Empty)
         newBoard.setField(Move.to(move), fromField)
       case MoveType.Strengthen =>
         val fromField = board.getField(Move.from(move))
         val toField = board.getField(Move.to(move))
-        newBoard.setField(Move.from(move), Field.empty)
+        newBoard.setField(Move.from(move), Field.Empty)
         newBoard.setField(Move.to(move), Field.strengthened(fromField, toField))
     }
     newBoard

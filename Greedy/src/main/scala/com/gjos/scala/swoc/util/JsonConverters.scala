@@ -16,7 +16,7 @@ object JsonConverters {
   }*/
   def createInitiateRequest(jsonMessage: String): InitiateRequest = {
     val playerNum = parse(jsonMessage).getAs[String]("Color").toInt
-    InitiateRequest(Player.byValue(playerNum))
+    InitiateRequest(playerNum)
   }
 
   /**{
@@ -25,13 +25,19 @@ object JsonConverters {
   }*/
   def createMoveRequest(jsonMessage: String): MoveRequest = {
     val json = parse(jsonMessage)
-    val boardSetup: Array[Field] =
-      for {
-        row <- json.getAs[JSONObject]("Board").getArray[JSONArray]("state")
-        field <- row.getArray[Long]()
-      } yield field.toInt
-    val allowedMoves: Array[Int] = json.getArray[String]("AllowedMoves") map (_.toInt)
-    MoveRequest(new FastBoard(boardSetup), allowedMoves map MoveType.byValue)
+    val jsonRows = json.getAs[JSONObject]("Board").getList[JSONArray]("state").iterator()
+    val board = new Array[Int](81)
+    var i = 0
+    while (jsonRows.hasNext) {
+      val row = jsonRows.next()
+      val fields = row.getList[Long]().iterator()
+      while (fields.hasNext) {
+        board(i) = fields.next().toInt
+        i += 1
+      }
+    }
+    val allowedMoves: Array[Int] = if (json.getList[String]("AllowedMoves").size == 1) Array(1) else Array(0, 1, 2)
+    MoveRequest(new FastBoard(board), allowedMoves)
   }
 
   /**{
@@ -51,8 +57,8 @@ object JsonConverters {
       case moveTo: JSONObject => Location.join(moveTo.getAs[Long]("X").toInt, moveTo.getAs[Long]("Y").toInt)
     }
     val winnerPlayerNum = json.getAs[String]("Winner").toInt
-    val move = Move(MoveType.byValue(moveType), fromLocation getOrElse -1, toLocation getOrElse -1)
-    ProcessedMove(Player.byValue(playerNum), move, Player.byValue(winnerPlayerNum))
+    val move = Move(moveType, fromLocation getOrElse -1, toLocation getOrElse -1)
+    ProcessedMove(playerNum, move, winnerPlayerNum)
   }
 
   /**{
@@ -68,7 +74,7 @@ object JsonConverters {
       } else ""
 
     List(
-      s""""Type": ${Move.moveType(move).value}""",
+      s""""Type": ${Move.moveType(move)}""",
       boardLocationToJson(Move.from(move), "From"),
       boardLocationToJson(Move.to(move), "To")
     ).filter(_.nonEmpty).mkString("{", ", ", "}")

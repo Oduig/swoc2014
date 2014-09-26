@@ -7,12 +7,13 @@ object MoveCache {
   private var size = 0
   private val cacheAttack = new java.util.HashMap[BoardHash, util.ArrayList[Int]]()
   private val cacheAll = new java.util.HashMap[BoardHash, util.ArrayList[Int]]()
-  private val enabled = true
+  private val enabled = false
 
-  def hasKey(board: FastBoard, mustAttack: Boolean): Boolean = {
+  def hasKey(board: FastBoard, mustAttack: Boolean): Boolean = enabled && {
     val h = board.myHashCode
-    enabled && (if (mustAttack) cacheAttack.containsKey(h) else cacheAll.containsKey(h))
+    if (mustAttack) cacheAttack.containsKey(h) else cacheAll.containsKey(h)
   }
+
   def get(board: FastBoard, mustAttack: Boolean): util.ArrayList[Int] = {
     val h = board.myHashCode()
     if (mustAttack) cacheAttack.get(h) else cacheAll.get(h)

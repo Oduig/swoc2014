@@ -6,13 +6,13 @@ public class Score {
      * Rates the board by the difference between us and them,
      * where score is determined by how close we are to having a type of stones eliminated
      */
-    public static int score(FastBoard board, Player us) {
+    public static int score(FastBoard board, int player) {
         if (ScoreCache.hasKey(board)) {
             return ScoreCache.get(board);
         } else {
-            Player them = us.opponent();
+            int them = Player.opponent(player);
 
-            int myScore = utility(board, us);
+            int myScore = utility(board, player);
             int theirScore = utility(board, them);
             //println(s"Me: $myScore, them: $theirScore")
 
@@ -40,7 +40,7 @@ public class Score {
      * Still, it's good to factor in other stones slightly,
      * because we cannot always take their most valuable stone.
      */
-    public static int utility(FastBoard b, Player p) {
+    public static int utility(FastBoard b, int p) {
         int location = 0;
         int pebbleValue = 0;
         int rockValue = 0;
@@ -48,11 +48,11 @@ public class Score {
         while (location < 81) {
             int field = b.getField(location);
             if (Field.player(field) == p) {
-                Stone stone = Field.stone(field);
+                int stone = Field.stone(field);
                 int value = (int) Math.pow(Field.height(field) * 10, 1.4);
-                if (stone.isPebble()) {
+                if (stone == Stone.Pebble()) {
                     pebbleValue += value;
-                } else if (stone.isRock()) {
+                } else if (stone == Stone.Rock()) {
                     rockValue += value;
                 } else {
                     boulderValue += value;
