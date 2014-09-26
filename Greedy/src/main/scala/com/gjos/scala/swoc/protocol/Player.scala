@@ -12,26 +12,33 @@ object Player {
 
   def opponent(p: Player) = if (p == White) Black else White
 
-  def allValidMoves(p: Player, board: FastBoard, attackOnly: Boolean = false): util.ArrayList[Move] = {
+  def allValidMoves(p: Player, board: FastBoard, attackOnly: Boolean = false): Array[Move] = {
     if (MoveCache.hasKey(board, attackOnly)) {
       MoveCache.get(board, attackOnly)
     } else {
-      val v = new util.ArrayList[Move]()
-      if (!attackOnly) v.add(Move(MoveType.Pass, -1, -1))
+      val possibleMoves = new Array[Int](241)
+      var i = 0
+      if (!attackOnly) {
+        possibleMoves(i) = Move(MoveType.Pass, -1, -1)
+        i += 1
+      }
 
-      for (y <- Player.fullRange) discover(p, board, y * 9, Direction.NorthEast, v, attackOnly)
-      for (x <- Player.fullRange) discover(p, board, x, Direction.South, v, attackOnly)
-      for (y <- Player.halfRange) discover(p, board, y * 9, Direction.SouthEast, v, attackOnly)
-      for (x <- Player.halfRange if x > 0) discover(p, board, x, Direction.SouthEast, v, attackOnly)
-      MoveCache.add(board, attackOnly, v)
-      v
+      for (y <- Player.fullRange) i = discover(p, board, y * 9, (y + 1) * 9, Direction.NorthEast, i, possibleMoves, attackOnly)
+      for (x <- Player.fullRange) i = discover(p, board, x, 81, Direction.South, i, possibleMoves, attackOnly)
+      for (y <- Player.halfRange) i = discover(p, board, y * 9, 81, Direction.SouthEast, i, possibleMoves, attackOnly)
+      for (x <- Player.halfRange if x > 0) i = discover(p, board, x, 81, Direction.SouthEast, i, possibleMoves, attackOnly)
+
+      val moves = util.Arrays.copyOfRange(possibleMoves, 0, i)
+      MoveCache.add(board, attackOnly, moves)
+      moves
     }
   }
 
-  private def discover(p: Player, board: FastBoard, start: Location, direction: Direction, v: util.ArrayList[Move], attackOnly: Boolean) {
+  private def discover(p: Player, board: FastBoard, start: Location, end: Location, direction: Direction, startIndex: Int, possibleMoves: Array[Int], attackOnly: Boolean): Int = {
+    var curMoveIndex = startIndex
     var curLoc: Location = start
     var prevLoc: Location = -1
-    while (curLoc < 9 * 9) {
+    while (curLoc < end) {
       if (!FastLocation.isValid(curLoc)) {
         prevLoc = -1
       } else {
@@ -44,12 +51,16 @@ object Player {
             val prevHeight = Field.height(prev)
             val curHeight = Field.height(cur)
             if (prevPlayer == p && curPlayer == p && !attackOnly) {
-              v add Move(MoveType.Strengthen, curLoc, prevLoc)
-              v add Move(MoveType.Strengthen, prevLoc, curLoc)
+              possibleMoves(curMoveIndex) = Move(MoveType.Strengthen, curLoc, prevLoc)
+              curMoveIndex += 1
+              possibleMoves(curMoveIndex) = Move(MoveType.Strengthen, prevLoc, curLoc)
+              curMoveIndex += 1
             } else if (prevPlayer != p && curPlayer == p && curHeight >= prevHeight) {
-              v add Move(MoveType.Attack, curLoc, prevLoc)
+              possibleMoves(curMoveIndex) = Move(MoveType.Attack, curLoc, prevLoc)
+              curMoveIndex += 1
             } else if (prevPlayer == p && curPlayer != p && prevHeight >= curHeight) {
-              v add Move(MoveType.Attack, prevLoc, curLoc)
+              possibleMoves(curMoveIndex) = Move(MoveType.Attack, prevLoc, curLoc)
+              curMoveIndex += 1
             }
           }
           prevLoc = curLoc
@@ -57,5 +68,6 @@ object Player {
       }
       curLoc += direction
     }
+    curMoveIndex
   }
 }
