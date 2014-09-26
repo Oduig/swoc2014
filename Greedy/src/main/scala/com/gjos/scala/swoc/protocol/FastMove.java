@@ -30,9 +30,10 @@ public class FastMove {
         }
 
         for (int m = 0; m < 28181; m++) {
-            moveType[m] = m / 10000;
-            from[m] = (m % 10000) / 100;
-            to[m] = m % 100;
+            int mt = m / 10000;
+            moveType[m] = mt;
+            from[m] = (mt > 0) ? (m % 10000) / 100 : -1;
+            to[m] = (mt > 0) ? m % 100 : -1;
         }
     }
 }

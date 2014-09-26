@@ -34,6 +34,7 @@ object Player {
     }
   }
 
+
   private def discover(p: Player, board: FastBoard, start: Location, end: Location, direction: Direction, startIndex: Int, possibleMoves: Array[Int], attackOnly: Boolean): Int = {
     var curMoveIndex = startIndex
     var curLoc: Location = start

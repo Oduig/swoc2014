@@ -1,13 +1,11 @@
 package com.gjos.scala.swoc.protocol
 
-import java.util
-
 object MoveCache {
   private val cacheLimit = 10000
   private var size = 0
   private val cacheAttack = new java.util.HashMap[BoardHash, Array[Int]]()
   private val cacheAll = new java.util.HashMap[BoardHash, Array[Int]]()
-  private val enabled = false
+  private val enabled = true
 
   def hasKey(board: FastBoard, mustAttack: Boolean): Boolean = enabled && {
     val h = board.myHashCode

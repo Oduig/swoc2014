@@ -40,6 +40,23 @@ class PlayerSpec extends WordSpec with Matchers {
       moves should contain (attackEqualValid)
       moves should not contain attackStrongerValid
       moves should not contain invalidMove
+      moves foreach {
+        case m if Move.moveType(m) == 0 =>
+          assert(Move.from(m) == -1 && Move.to(m) == -1)
+        case m if Move.moveType(m) == 1 =>
+          val from = Move.from(m)
+          val to = Move.to(m)
+          val fromField = board.getField(from)
+          val toField = board.getField(to)
+          assert(FastLocation.isValid(from) && FastLocation.isValid(to) && Field.player(fromField) != Field.player(toField) && Field.height(fromField) >= Field.height(toField))
+        case m if Move.moveType(m) == 2 =>
+          val from = Move.from(m)
+          val to = Move.to(m)
+          val fromField = board.getField(from)
+          val toField = board.getField(to)
+          assert(FastLocation.isValid(from) && FastLocation.isValid(to) && Field.player(fromField) == Field.player(toField))
+        case _ => assert(false)
+      }
     }
   }
 }
