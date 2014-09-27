@@ -56,5 +56,14 @@ class BotSpec extends WordSpec with Matchers {
       val move = new Bot(Some(us)).handleMove(moveRequest("take-longest-path.txt"), singleMoveTurn = false)
       move should not be Move(MoveType.Attack, Location fromLabel "F8", Location fromLabel "E9")
     }
+
+    "should not move opponent's pieces" in {
+      val mr = moveRequest("move-opponents-pieces.txt")
+      val move = new Bot(Some(us)).handleMove(mr, singleMoveTurn = false)
+      val illegalMove = Move(MoveType.Attack, Location fromLabel "B4", Location fromLabel "F3")
+      move should not be illegalMove
+      Field.player(mr.board.getField(Move.from(move))) should be (Player.Black)
+      assert(!(Player.allValidMoves(us, mr.board, true) contains illegalMove))
+    }
   }
 }

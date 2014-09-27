@@ -16,7 +16,10 @@ class Bot(private var myColor: Option[Player], private val verbose: Boolean = fa
     myColor = Some(player)
   }
 
-  def handleProcessedMove(move: ProcessedMove) { }
+  def handleProcessedMove(move: ProcessedMove) {
+    val p = if (move.player == Player.White) "White" else "Black"
+    System.err.println(s"$p did move ${Move.toString(move.move)}")
+  }
 
   def handleMove(request: MoveRequest, singleMoveTurn: Boolean, runTime: Long = 1750): Move = {
     if (request.allowedMoves.size == 1) bestMove(request.board, mustAttack = true, singleMoveTurn, runTime)

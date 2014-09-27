@@ -10,5 +10,9 @@ object Move {
   def from(m: Move): Location = FastMove.from(m)
   def to(m: Move): Location = FastMove.to(m)
 
-  def toString(m: Move) = Location.label(from(m)) + s"--${moveType(m)}-->" + Location.label(to(m))
+  def toString(m: Move) = {
+    val mt = moveType(m)
+    val mv = if (mt == MoveType.Pass) "P" else if (mt == MoveType.Attack) "A" else "D"
+    Location.label(from(m)) + s"--$mv-->" + Location.label(to(m))
+  }
 }
