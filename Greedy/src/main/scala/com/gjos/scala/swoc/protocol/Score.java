@@ -6,13 +6,13 @@ public class Score {
      * Rates the board by the difference between us and them,
      * where score is determined by how close we are to having a type of stones eliminated
      */
-    public static int score(FastBoard board, int player) {
+    public static int score(FastBoard board, int us) {
         if (ScoreCache.hasKey(board)) {
             return ScoreCache.get(board);
         } else {
-            int them = Player.opponent(player);
+            int them = Player.opponent(us);
 
-            int myScore = utility(board, player);
+            int myScore = utility(board, us);
             int theirScore = utility(board, them);
             //println(s"Me: $myScore, them: $theirScore")
 
@@ -24,10 +24,9 @@ public class Score {
                 // If we made a losing move, it's bad.
                 score = Integer.MIN_VALUE;
             } else {
-//                int ourValidMoves = us.allValidMoves(board, true).size();
-//                int theirValidMoves = them.allValidMoves(board, true).size();
-//                score = ourValidMoves - theirValidMoves;
-                score = myScore - theirScore;
+                int ourValidMoves = Player.allValidMoves(us, board, true).length;
+                int theirValidMoves = Player.allValidMoves(them, board, true).length;
+                score = (ourValidMoves - theirValidMoves) * 10 + myScore - theirScore;
             }
             ScoreCache.add(board, score);
             return score;

@@ -8,7 +8,7 @@ import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.mutable.ArrayBuffer
 
-class Bot(private var myColor: Option[Player], private val verbose: Boolean = false) {
+class Bot(private var myColor: Option[Player], private val verbose: Boolean = true) {
   private val random = new Random
   private lazy val us = myColor.get
 
