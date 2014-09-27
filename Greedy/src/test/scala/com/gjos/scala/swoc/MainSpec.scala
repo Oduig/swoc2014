@@ -14,10 +14,10 @@ class MainSpec extends WordSpec with Matchers {
       val bot = new Bot(None)
       val engine = new Engine(bot, ioManager)
 
-      val maxRuntime = 2000.millis
+      val maxRuntime = 4000.millis
       Await.ready(Future(engine.run()), maxRuntime)
       val outLines = output().split(ioManager.newline).toList
-      outLines.size should be (1)
+      outLines.size should be (2)
     }
 
     "be able to play as white" in {

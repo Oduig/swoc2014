@@ -24,9 +24,10 @@ public class Score {
                 // If we made a losing move, it's bad.
                 score = Integer.MIN_VALUE;
             } else {
-                int ourValidMoves = Player.allValidMoves(us, board, true).length;
-                int theirValidMoves = Player.allValidMoves(them, board, true).length;
-                score = (ourValidMoves - theirValidMoves) * 10 + myScore - theirScore;
+                //int ourValidMoves = Player.allValidMoves(us, board, true).length;
+                //int theirValidMoves = Player.allValidMoves(them, board, true).length;
+                //score = (ourValidMoves - theirValidMoves) * 10 + myScore - theirScore;
+                score = myScore - theirScore;
             }
             ScoreCache.add(board, score);
             return score;

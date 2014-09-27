@@ -18,7 +18,7 @@ class Stopwatch(val outputEnabled: Boolean) {
   }
 
   def tell(message: String = "") = if (outputEnabled) {
-    println("|" + prettyPrint(sinceLast) + "|" + message)
+    System.err.println("|" + prettyPrint(sinceLast) + "|" + message)
   }
 
   private def prettyPrint(t: Long) = f"Stopwatch: ${t / 1000f}%.2f seconds"
