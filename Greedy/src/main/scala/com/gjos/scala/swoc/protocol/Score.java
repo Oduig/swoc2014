@@ -24,9 +24,6 @@ public class Score {
                 // If we made a losing move, it's bad.
                 score = Integer.MIN_VALUE;
             } else {
-//                int ourValidMoves = Player.allValidMoves(us, board, true).length;
-//                int theirValidMoves = Player.allValidMoves(them, board, true).length;
-//                score = (ourValidMoves - theirValidMoves) * 10 + myScore - theirScore;
                 score = myScore - theirScore;
             }
             ScoreCache.add(board, score);
@@ -62,8 +59,9 @@ public class Score {
         }
 
         //println(s"Pebble: $pebbleValue, Rock: $rockValue, Boulder: $boulderValue")
+        int validMoveCount = Player.allValidMoves(p, b, false).length;
         int minScore = Math.min(pebbleValue, Math.min(rockValue, boulderValue));
         int totalScore = pebbleValue + rockValue + boulderValue;
-        return minScore <= 0 ? Integer.MIN_VALUE : minScore * 10 + totalScore;
+        return minScore <= 0 ? Integer.MIN_VALUE : validMoveCount * 10 + minScore * 10 + totalScore;
     }
 }

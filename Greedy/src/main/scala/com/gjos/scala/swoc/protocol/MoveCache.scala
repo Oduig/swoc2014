@@ -7,7 +7,7 @@ object MoveCache {
   private val cacheAllWhite = new java.util.HashMap[BoardHash, Array[Int]]()
   private val cacheAttackBlack = new java.util.HashMap[BoardHash, Array[Int]]()
   private val cacheAllBlack = new java.util.HashMap[BoardHash, Array[Int]]()
-  private val enabled = false
+  private val enabled = true
 
   def hasKey(board: FastBoard, p: Player, mustAttack: Boolean): Boolean = enabled && {
     val h = board.myHashCode

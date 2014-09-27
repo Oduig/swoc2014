@@ -30,5 +30,17 @@ class MainSpec extends WordSpec with Matchers {
       val outLines = output().split(ioManager.newline).toList
       outLines.size should be (1)
     }
+
+    "keep giving responses" in {
+      val (ioManager, output) = IOManager.fileMode(Resource.testResource("responseless.txt"))
+      val bot = new Bot(None)
+      val engine = new Engine(bot, ioManager)
+
+      val maxRuntime = 12000.millis
+      Await.ready(Future(engine.run()), maxRuntime)
+      val outLines = output().split(ioManager.newline).toList
+      outLines.size should be (6)
+      println(outLines)
+    }
   }
 }

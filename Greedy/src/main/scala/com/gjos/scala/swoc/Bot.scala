@@ -22,7 +22,7 @@ class Bot(private var myColor: Option[Player], private val verbose: Boolean = fa
     System.err.println(s"$p did move ${Move.toString(move.move)}")
   }
 
-  def handleMove(request: MoveRequest, singleMoveTurn: Boolean, runTime: Long = 1750): Move = {
+  def handleMove(request: MoveRequest, singleMoveTurn: Boolean, runTime: Long = 1650): Move = {
     val realRuntime = if (firstMove) {
       firstMove = false
       1000
