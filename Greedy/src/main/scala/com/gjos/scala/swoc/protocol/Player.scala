@@ -13,8 +13,8 @@ object Player {
   def opponent(p: Player) = if (p == White) Black else White
 
   def allValidMoves(p: Player, board: FastBoard, attackOnly: Boolean = false): Array[Move] = {
-    if (MoveCache.hasKey(board, attackOnly)) {
-      MoveCache.get(board, attackOnly)
+    if (MoveCache.hasKey(board, p, attackOnly)) {
+      MoveCache.get(board, p, attackOnly)
     } else {
       val possibleMoves = new Array[Int](241)
       var i = 0
@@ -29,7 +29,7 @@ object Player {
       for (x <- Player.halfRange if x > 0) i = discover(p, board, x, 81, Direction.SouthEast, i, possibleMoves, attackOnly)
 
       val moves = util.Arrays.copyOfRange(possibleMoves, 0, i)
-      MoveCache.add(board, attackOnly, moves)
+      MoveCache.add(board, p, attackOnly, moves)
       moves
     }
   }

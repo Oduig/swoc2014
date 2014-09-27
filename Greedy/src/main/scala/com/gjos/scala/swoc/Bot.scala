@@ -11,6 +11,7 @@ import scala.collection.mutable.ArrayBuffer
 class Bot(private var myColor: Option[Player], private val verbose: Boolean = false) {
   private val random = new Random
   private lazy val us = myColor.get
+  private var firstMove = true
 
   def handleInitiate(player: Player) {
     myColor = Some(player)
@@ -22,14 +23,20 @@ class Bot(private var myColor: Option[Player], private val verbose: Boolean = fa
   }
 
   def handleMove(request: MoveRequest, singleMoveTurn: Boolean, runTime: Long = 1750): Move = {
-    if (request.allowedMoves.size == 1) bestMove(request.board, mustAttack = true, singleMoveTurn, runTime)
+    val realRuntime = if (firstMove) {
+      firstMove = false
+      1000
+    } else {
+      runTime
+    }
+    if (request.allowedMoves.size == 1) bestMove(request.board, mustAttack = true, singleMoveTurn, realRuntime)
     else bestMove(request.board, mustAttack = false, singleMoveTurn = false, runTime)
   }
 
   def bestMove(board: FastBoard, mustAttack: Boolean, singleMoveTurn: Boolean, runTime: Long): Move = {
 
     var timedOut = false
-    def leastEvenScore(p: Player): Int = if (p == us) Int.MinValue else Int.MaxValue
+    def leastEvenScore(p: Player): Int = if (p == us) Integer.MIN_VALUE else Integer.MAX_VALUE
     def moreEven(p: Player)(x: Int, y: Int) = if (p == us) x > y else x < y
 
     // Returns Move, score, longest guaranteed path length for loss
@@ -39,7 +46,7 @@ class Bot(private var myColor: Option[Player], private val verbose: Boolean = fa
       } else {
         val currentScore = b.score(us)
         // Stop at max recursion depth or when we have lost. If we have won, it's already covered by iterative deepening.
-        if (depth == 0 || currentScore == Int.MinValue) {
+        if (depth == 0 || currentScore == Integer.MIN_VALUE) {
           (firstMoveInPath, currentScore, 0)
         } else {
           val validMoves = Player.allValidMoves(p, b, attackOnly)
