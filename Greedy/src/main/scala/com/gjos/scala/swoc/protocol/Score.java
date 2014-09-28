@@ -46,7 +46,7 @@ public class Score {
             int field = b.getField(location);
             if (Field.player(field) == p) {
                 int stone = Field.stone(field);
-                int value = (int) Math.pow(Field.height(field) * 10, 1.4);
+                int value = (int) Math.pow(Field.height(field) * 10, 1.6);
                 if (stone == Stone.Pebble()) {
                     pebbleValue += value;
                 } else if (stone == Stone.Rock()) {
@@ -61,7 +61,7 @@ public class Score {
         //println(s"Pebble: $pebbleValue, Rock: $rockValue, Boulder: $boulderValue")
         int validMoveCount = Player.allValidMoves(p, b, false).length;
         int minScore = Math.min(pebbleValue, Math.min(rockValue, boulderValue));
-        int totalScore = pebbleValue + rockValue + boulderValue;
-        return minScore <= 0 ? Integer.MIN_VALUE : validMoveCount * 10 + minScore * 10 + totalScore;
+        int weightedScore = (int) (Math.log(pebbleValue) + Math.log(rockValue) + Math.log(boulderValue));
+        return minScore <= 0 ? Integer.MIN_VALUE : validMoveCount + weightedScore * 100 + minScore;
     }
 }
