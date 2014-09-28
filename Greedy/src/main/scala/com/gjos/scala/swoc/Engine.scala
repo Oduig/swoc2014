@@ -1,7 +1,7 @@
 package com.gjos.scala.swoc
 
 import com.gjos.scala.swoc.protocol._
-import com.gjos.scala.swoc.util.JsonConverters
+import com.gjos.scala.swoc.util.{Stopwatch, JsonConverters}
 import com.gjos.scala.swoc.protocol.MoveRequest
 import com.gjos.scala.swoc.protocol.ProcessedMove
 import scala.Some
@@ -46,7 +46,7 @@ class Engine(private val bot: Bot, private val ioManager: IOManager) {
       System.err.println("Valar morghulis.")
       "If I die, what's the point?"
     } else {
-      System.err.println("I chose move " + Move.toString(move))
+      Stopwatch().tell("I chose move " + Move.toString(move))
       JsonConverters.toJson(move)
     }
     ioManager.writeLine(out)

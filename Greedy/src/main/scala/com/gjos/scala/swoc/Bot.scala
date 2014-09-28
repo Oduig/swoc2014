@@ -22,10 +22,10 @@ class Bot(private var myColor: Option[Player], private val verbose: Boolean = fa
     System.err.println(s"$p did move ${Move.toString(move.move)}")
   }
 
-  def handleMove(request: MoveRequest, singleMoveTurn: Boolean, runTime: Long = 1650): Move = {
+  def handleMove(request: MoveRequest, singleMoveTurn: Boolean, runTime: Long = 1850): Move = {
     val realRuntime = if (firstMove) {
       firstMove = false
-      1000
+      1000 // We may need the rest of the time to do some initialization
     } else {
       runTime
     }
@@ -120,7 +120,7 @@ class Bot(private var myColor: Option[Player], private val verbose: Boolean = fa
     var depth = 1
     var move: Move = -1
     var score: Int = 0
-    Future(blocking(Thread sleep runTime)) onComplete (_ => timedOut = true)
+    Future(Thread sleep runTime) onComplete (_ => timedOut = true)
     try {
       // We can stop if we find a game ender, and take any move.
       // Otherwise, stop on timeout.
