@@ -3,15 +3,13 @@ package com.gjos.scala.swoc
 import java.util.Random
 import com.gjos.scala.swoc.protocol._
 import com.gjos.scala.swoc.protocol.Player
-import scala.concurrent.blocking
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.mutable.ArrayBuffer
 
-class Bot(private var myColor: Option[Player], private val verbose: Boolean = false) {
+class Bot(private var myColor: Option[Player], private val verbose: Boolean = true) {
   private val random = new Random
   private lazy val us = myColor.get
   private var firstMove = true
+  private var dueTime = 0l
 
   def handleInitiate(player: Player) {
     myColor = Some(player)
@@ -22,26 +20,25 @@ class Bot(private var myColor: Option[Player], private val verbose: Boolean = fa
     System.err.println(s"$p did move ${Move.toString(move.move)}")
   }
 
-  def handleMove(request: MoveRequest, singleMoveTurn: Boolean, runTime: Long = 1850): Move = {
-    val realRuntime = if (firstMove) {
+  def handleMove(request: MoveRequest, singleMoveTurn: Boolean, runTime: Long = 1750): Move = {
+    if (firstMove) {
       firstMove = false
-      1000 // We may need the rest of the time to do some initialization
+      dueTime = System.currentTimeMillis + 1000l // We may need the rest of the time to do some initialization
     } else {
-      runTime
+      dueTime = System.currentTimeMillis + runTime
     }
-    if (request.allowedMoves.size == 1) bestMove(request.board, mustAttack = true, singleMoveTurn, realRuntime)
-    else bestMove(request.board, mustAttack = false, singleMoveTurn = false, runTime)
+    if (request.allowedMoves.size == 1) bestMove(request.board, mustAttack = true, singleMoveTurn)
+    else bestMove(request.board, mustAttack = false, singleMoveTurn = false)
   }
 
-  def bestMove(board: FastBoard, mustAttack: Boolean, singleMoveTurn: Boolean, runTime: Long): Move = {
+  def bestMove(board: FastBoard, mustAttack: Boolean, singleMoveTurn: Boolean): Move = {
 
-    var timedOut = false
     def leastEvenScore(p: Player): Int = if (p == us) Integer.MIN_VALUE else Integer.MAX_VALUE
     def moreEven(p: Player)(x: Int, y: Int) = if (p == us) x > y else x < y
 
     // Returns Move, score, longest guaranteed path length for loss
     def minimax(b: FastBoard, firstMoveInPath: Move, p: Player, attackOnly: Boolean, hasExtraMove: Boolean, depth: Int, alpha: Int, beta: Int): (Move, Int, Int) = {
-      if (timedOut) {
+      if (System.currentTimeMillis > dueTime) {
         throw new InterruptedException("Minimax interrupted due to timeout.")
       } else {
         val currentScore = b.score(us)
@@ -61,7 +58,7 @@ class Bot(private var myColor: Option[Player], private val verbose: Boolean = fa
             var newBeta = beta
             var cutoff = false
             while (i < validMoves.length && !cutoff) {
-              if (timedOut) throw new InterruptedException("Minimax interrupted due to timeout.")
+              if (System.currentTimeMillis > dueTime) throw new InterruptedException("Minimax interrupted due to timeout.")
               val validMove = validMoves(i)
               val outcome = minimax(
                 Board.applyMove(b, validMove),
@@ -92,7 +89,7 @@ class Bot(private var myColor: Option[Player], private val verbose: Boolean = fa
             var optimalMoveIndices = List[Int]()
             i = 0
             while (i < childScores.size) {
-              if (timedOut) throw new InterruptedException("Minimax interrupted due to timeout.")
+              if (System.currentTimeMillis > dueTime) throw new InterruptedException("Minimax interrupted due to timeout.")
               val thisone = childScores(i)._2
               if (compare(thisone, evenestSoFar)) {
                 optimalMoveIndices = List[Int](i)
@@ -120,11 +117,10 @@ class Bot(private var myColor: Option[Player], private val verbose: Boolean = fa
     var depth = 1
     var move: Move = -1
     var score: Int = 0
-    Future(Thread sleep runTime) onComplete (_ => timedOut = true)
     try {
       // We can stop if we find a game ender, and take any move.
       // Otherwise, stop on timeout.
-      while (score < Integer.MAX_VALUE && score > Integer.MIN_VALUE && !timedOut) {
+      while (score < Integer.MAX_VALUE && score > Integer.MIN_VALUE && System.currentTimeMillis < dueTime) {
         val (m, s, _) = minimax(board, -1, us, mustAttack, !singleMoveTurn && mustAttack, depth, Int.MinValue, Int.MaxValue)
         move = m
         score = s
